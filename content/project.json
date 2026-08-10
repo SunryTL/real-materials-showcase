@@ -1,0 +1,28 @@
+{
+  "name": "REAL 材料预测平台",
+  "expansion": "Rare-Earth Absorption and Luminescence",
+  "project": "稀土激光荧光陶瓷构效解析与定向创制",
+  "version": "Preview 0.1",
+  "auditedOn": "2026-08-10",
+  "sourceVersion": "Ce3_Garnet_Ceramic_Database_clean_v1.3_20260725.xlsx",
+  "coreDefinition": "core_dataset_flag == true AND core_rt_flag == true",
+  "metrics": {
+    "totalSamples": 255,
+    "coreSamples": 132,
+    "physicsPairs": 53,
+    "coreDoi": 27,
+    "families": 19,
+    "sourceLinks": 376,
+    "sourceTitles": 44,
+    "allDoi": 42,
+    "m0Ready": 131,
+    "m1Ready": 32
+  },
+  "familyCounts": [
+    ["YAG", 34], ["(Y,Gd)AG", 16], ["LuAG", 14], ["LuAG solid solution", 10],
+    ["LuGdAG", 8], ["YAGG", 7], ["GAGG", 7], ["LuAGG", 6], ["CSS", 6],
+    ["GSAG", 5], ["LuYSAG", 4], ["(Lu,Y)AG", 4], ["GLMS", 3], ["YSGG", 2],
+    ["YAMSG", 2], ["(Gd,Lu)AG", 1], ["GGAG", 1], ["Gd-Y-ScAG", 1], ["Y3Al5O12", 1]
+  ]
+}
+

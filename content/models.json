@@ -1,0 +1,16 @@
+{
+  "status": "validation_pending",
+  "publicPredictionEnabled": false,
+  "latestScore": null,
+  "models": [
+    {"id": "M0", "name": "组成黑箱基线", "status": "preparing", "purpose": "建立可靠比较起点"},
+    {"id": "M1", "name": "低成本物理增强", "status": "planned", "purpose": "检验结构与物理信息的增益"},
+    {"id": "M2", "name": "最低5d₁激发能", "status": "planned", "purpose": "学习电子被激发到哪里"},
+    {"id": "M3", "name": "弛豫能量损失", "status": "planned", "purpose": "学习发光前损失多少能量"},
+    {"id": "M4", "name": "物理一致性融合", "status": "planned", "purpose": "融合激发与弛豫预测发射"},
+    {"id": "M5", "name": "陶瓷观测修正", "status": "planned", "purpose": "处理厚度、工艺和微结构残差"},
+    {"id": "M6", "name": "不确定性与适用域", "status": "planned", "purpose": "给出可信边界和相似材料"},
+    {"id": "M7", "name": "多模态深度学习", "status": "future", "purpose": "数据积累后的结构与光谱扩展"}
+  ]
+}
+

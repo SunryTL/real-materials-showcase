@@ -1,0 +1,27 @@
+[
+  {
+    "author": "Zhuo et al.",
+    "year": 2020,
+    "title": "Machine learning 5d-level centroid shift of Ce3+ inorganic phosphors",
+    "doi": "10.1063/5.0012434",
+    "contribution": "用介电常数、电负性、极化率和局域几何预测质心位移。",
+    "relation": "REAL将其作为外部上游物理模型，不把预测值冒充陶瓷实测值。"
+  },
+  {
+    "author": "Jiang et al.",
+    "year": 2022,
+    "title": "Multiobjective Machine Learning-Assisted Discovery of a Novel Cyan–Green Garnet: Ce Phosphors with Excellent Thermal Stability",
+    "doi": "10.1021/acsami.2c02698",
+    "contribution": "直接预测波长与热稳定性，并开展多目标筛选和制备表征。",
+    "relation": "REAL转向陶瓷域、严格外推和激发—弛豫分解。"
+  },
+  {
+    "author": "Lee et al.",
+    "year": 2026,
+    "title": "Data-Driven Discovery of Ce3+-Activated Phosphors with Target Excitation Energies for Solid-State Lighting",
+    "doi": "10.1021/acsami.6c07772",
+    "contribution": "使用组成、局域结构和物理描述符预测最低5d₁激发位置。",
+    "relation": "REAL学习其正规机器学习流程，但研究目标扩展到陶瓷发射及其分解。"
+  }
+]
+

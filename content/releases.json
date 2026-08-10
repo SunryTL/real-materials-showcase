@@ -1,0 +1,21 @@
+[
+  {
+    "version": "Preview 0.1",
+    "date": "2026-08-10",
+    "status": "current",
+    "changes": ["公开真实数据库统计", "上线机制解析", "上线预测输入完整度预览", "明确模型验证状态"]
+  },
+  {
+    "version": "Model 0.2",
+    "date": "计划",
+    "status": "planned",
+    "changes": ["接入冻结M0基线", "显示适用域", "提供相似训练材料"]
+  },
+  {
+    "version": "Research 1.0",
+    "date": "计划",
+    "status": "future",
+    "changes": ["接入物理分层M2–M4", "输出不确定性", "开放受控数据贡献入口"]
+  }
+]
+
