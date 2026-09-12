@@ -6,10 +6,11 @@
 
 [打开 GitHub Pages](https://sunrytl.github.io/real-materials-showcase/) · [查看数据口径](#当前公开内容) · [了解模型边界](#模型边界)
 
-## 私有科研工作台规划
+## 私有科研工作台
 
-REAL下一阶段将沿用同一前端视觉，增加仅在本机／实验室局域网运行的私有科研工作台，连接论文PDF上传、七表数据蒸馏、人工审核、数据库状态、科研图、导师周报以及M0／M1版本对照。公开GitHub Pages继续保持只读，不接收PDF和API密钥。
+本仓库同时包含仅在科研电脑／实验室私有网络运行的REAL工作台：PDF上传与SHA-256查重、DOI确认、OpenAI七表蒸馏、候选数据审核、数据库状态科研图和下一批文献清单。公开GitHub Pages继续保持只读，不接收PDF和API密钥。
 
+- [私有工作台安装与使用](WORKBENCH_README.md)
 - [产品定义](PRODUCT.md)
 - [2026-09-12 REAL科研工作台设计说明](docs/superpowers/specs/2026-09-12-real-research-workbench-design.md)
 - [阶段A：论文收件箱设计](docs/superpowers/specs/2026-09-12-real-workbench-stage-a-inbox-design.md)

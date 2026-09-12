@@ -28,3 +28,9 @@ yarn-error.log*
 
 /dist/
 /.worktrees/
+*.db
+*.db-shm
+*.db-wal
+/runtime/
+server/__pycache__/
+server/**/__pycache__/
