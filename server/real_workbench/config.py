@@ -21,6 +21,8 @@ class Settings:
     session_secret: str = ""
     max_pdf_mb: int = 100
     openai_model: str = "gpt-5.6-sol"
+    authority_workbook: Path | None = None
+    pubfig_python: Path | None = None
 
     @property
     def database_path(self) -> Path:
@@ -37,8 +39,20 @@ class Settings:
     def public_content_root(self) -> Path:
         return Path(__file__).resolve().parents[2] / "content"
 
+    @property
+    def bundled_figure_root(self) -> Path:
+        return Path(__file__).resolve().parents[2] / "public/workbench/database_figures"
+
+    @property
+    def figure_release_root(self) -> Path:
+        return self.runtime_root / "database_figures"
+
+    @property
+    def snapshot_root(self) -> Path:
+        return self.research_root / "research/data_snapshot"
+
     def prepare(self) -> None:
-        for path in (self.runtime_root, self.pdf_inbox_root, self.candidate_root):
+        for path in (self.runtime_root, self.pdf_inbox_root, self.candidate_root, self.figure_release_root):
             path.mkdir(parents=True, exist_ok=True)
         (self.runtime_root / "jobs").mkdir(exist_ok=True)
         if not self.session_secret:
@@ -75,4 +89,12 @@ class Settings:
             session_secret=os.environ.get("REAL_SESSION_SECRET", ""),
             max_pdf_mb=int(os.environ.get("REAL_MAX_PDF_MB", "100")),
             openai_model=os.environ.get("OPENAI_MODEL", "gpt-5.6-sol"),
+            authority_workbook=_path_env(
+                "REAL_AUTHORITY_WORKBOOK",
+                research_work / "02_数据库/00_最新总数据库/Ce3_Garnet_Ceramic_Database_clean_v1.3_20260725.xlsx",
+            ),
+            pubfig_python=_path_env(
+                "REAL_PUBFIG_PYTHON",
+                home / "miniforge3/envs/real-materials-pubfig/bin/python",
+            ),
         )

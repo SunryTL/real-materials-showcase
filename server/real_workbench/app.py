@@ -9,7 +9,7 @@ from typing import Any
 
 from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .config import Settings
@@ -33,6 +33,8 @@ from .packages import (
     write_candidate_package,
 )
 from .research_data import PRIORITY_DOIS, WEEKLY_EVIDENCE, database_health
+from .figures import database_release_version, latest_release, manifest_for, render_release, resolve_asset
+from .explorer import calculate as explorer_statistics, versions as database_versions, publish as publish_database, package_hash
 from .security import hash_password, new_session, session_hash, utc_now, verify_password
 
 
@@ -58,6 +60,10 @@ class TablePatch(BaseModel):
 class ReviewInput(BaseModel):
     decision: str
     notes: str = ""
+
+class PublishInput(BaseModel):
+    job_ids: list[int]
+    confirm: bool = False
 
 
 def _row_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
@@ -393,7 +399,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
             report_path = package / "validation_report.json"
             if report_path.exists():
-                return json.loads(report_path.read_text(encoding="utf-8"))
+                report = json.loads(report_path.read_text(encoding="utf-8"))
+                if report.get("valid") and completed.returncode == 0:
+                    report["validated_package_sha256"] = package_hash(package)
+                    report_path.write_text(json.dumps(report,ensure_ascii=False,indent=2))
+                return report
             raise HTTPException(500, completed.stderr[-1000:] or "论文库校验器未生成报告")
         report = {
             "valid": all((package / "tables" / f"{name}.csv").exists() for name in SEVEN_TABLE_NAMES),
@@ -413,7 +423,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if user["role"] != "owner":
             raise HTTPException(403, "只有负责人可以保存准入建议")
         with connect(settings.database_path) as connection:
-            cursor = connection.execute("INSERT INTO package_reviews(job_id,reviewer_id,decision,notes,created_at) VALUES(?,?,?,?,?)", (job_id, user["id"], payload.decision, payload.notes, utc_now()))
+            job=connection.execute('SELECT package_path FROM jobs WHERE id=?',(job_id,)).fetchone()
+            if not job or not job['package_path']: raise HTTPException(404,'候选包不存在')
+            package=(settings.candidate_root/job['package_path']).resolve()
+            if settings.candidate_root.resolve() not in package.parents: raise HTTPException(422,'候选包路径越界')
+            reviewed_hash=package_hash(package)
+            cursor = connection.execute("INSERT INTO package_reviews(job_id,reviewer_id,decision,notes,created_at,reviewed_package_sha256) VALUES(?,?,?,?,?,?)", (job_id, user["id"], payload.decision, payload.notes, utc_now(),reviewed_hash))
             _audit(connection, user["id"], "review_candidate", "job", job_id, after={"decision": payload.decision, "notes": payload.notes})
         return {"review_id": cursor.lastrowid, "decision": payload.decision, "authority_database_changed": False}
 
@@ -421,6 +436,89 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def get_database_health(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
         del user
         return database_health(settings.public_content_root, settings.candidate_root)
+
+    @app.get("/api/v1/explorer")
+    def explorer(version: str="latest",family: str="",material_form: str="",status: str="formal",user: dict[str,Any]=Depends(current_user)):
+        try:return explorer_statistics(settings,version=version,family=family,material_form=material_form,status=status)
+        except (ValueError,FileNotFoundError) as error:raise HTTPException(422,str(error)) from error
+
+    @app.get("/api/v1/database/versions")
+    def explorer_versions(user: dict[str,Any]=Depends(current_user)):
+        return {"versions":database_versions(settings)}
+
+    @app.post("/api/v1/database/publish")
+    def publish_snapshot(payload: PublishInput,user: dict[str,Any]=Depends(current_user)):
+        if user["role"]!="owner":raise HTTPException(403,"只有负责人可以发布数据库快照")
+        if not payload.confirm or not payload.job_ids:raise HTTPException(422,"请选择候选包并明确确认发布")
+        try:
+            result=publish_database(settings,payload.job_ids,user["id"])
+            with connect(settings.database_path) as db:_audit(db,user["id"],"publish_database_snapshot","snapshot",None,after=result)
+            return result
+        except (ValueError,FileNotFoundError) as error:raise HTTPException(422,str(error)) from error
+
+    def run_figure_job(job_id: int, database_version: str) -> None:
+        with connect(settings.database_path) as connection:
+            connection.execute("UPDATE figure_jobs SET status='running',stage='validating',progress=10,message='正在校验正式数据库快照',updated_at=? WHERE id=?", (utc_now(), job_id))
+        try:
+            with connect(settings.database_path) as connection:
+                connection.execute("UPDATE figure_jobs SET stage='rendering',progress=35,message='正在计算统计并绘制期刊级PNG',updated_at=? WHERE id=?", (utc_now(), job_id))
+            manifest = render_release(settings, database_version)
+            with connect(settings.database_path) as connection:
+                connection.execute("UPDATE figure_jobs SET status='complete',stage='published',progress=100,message='新图集已原子发布',release_path=?,updated_at=? WHERE id=?", (str(manifest.parent), utc_now(), job_id))
+        except Exception as error:
+            with connect(settings.database_path) as connection:
+                connection.execute("UPDATE figure_jobs SET status='failed',stage='failed',message='生成失败，网页继续保留上一正式图集',error_message=?,updated_at=? WHERE id=?", (str(error), utc_now(), job_id))
+
+    @app.post("/api/v1/figures/render")
+    def start_figure_render(background: BackgroundTasks, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+        if user["role"] != "owner":
+            raise HTTPException(403, "只有负责人可以发布正式数据库科研图")
+        source_version = str(database_health(settings.public_content_root, settings.candidate_root)["version"])
+        version = database_release_version(source_version)
+        with connect(settings.database_path) as connection:
+            connection.execute('BEGIN IMMEDIATE')
+            active = connection.execute("SELECT id FROM figure_jobs WHERE status IN ('queued','running') ORDER BY id DESC LIMIT 1").fetchone()
+            if active:
+                raise HTTPException(409, {"message":"已有绘图任务正在进行", "job_id":active['id']})
+            cursor = connection.execute("INSERT INTO figure_jobs(status,stage,progress,message,database_version,created_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)", ("queued", "queued", 0, "科研图任务已排队", version, user["id"], utc_now(), utc_now()))
+            job_id = cursor.lastrowid
+            _audit(connection, user["id"], "render_database_figures", "figure_job", job_id, after={"database_version": version})
+        background.add_task(run_figure_job, job_id, version)
+        return {"job_id": job_id, "status": "queued", "database_version": version}
+
+    @app.get("/api/v1/figures/jobs/{job_id}")
+    def get_figure_job(job_id: int, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+        del user
+        with connect(settings.database_path) as connection:
+            row = connection.execute("SELECT * FROM figure_jobs WHERE id=?", (job_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, "科研图任务不存在")
+        return dict(row)
+
+    @app.get("/api/v1/figures/releases/latest")
+    def get_latest_figures(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+        del user
+        try:
+            return latest_release(settings)
+        except FileNotFoundError as error:
+            raise HTTPException(404, str(error)) from error
+
+    @app.get("/api/v1/figures/releases/{version}/manifest")
+    def get_figure_manifest(version: str, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+        del user
+        try:
+            return manifest_for(settings, version)
+        except (FileNotFoundError, ValueError) as error:
+            raise HTTPException(404, "科研图版本不存在") from error
+
+    @app.get("/api/v1/figures/releases/{version}/assets/{asset_path:path}")
+    def get_figure_asset(version: str, asset_path: str, user: dict[str, Any] = Depends(current_user)) -> FileResponse:
+        del user
+        try:
+            target = resolve_asset(settings, version, asset_path)
+        except (FileNotFoundError, ValueError) as error:
+            raise HTTPException(404, "科研图资源不存在") from error
+        return FileResponse(target, media_type="image/png" if target.suffix.lower() == ".png" else "text/csv")
 
     @app.get("/api/v1/literature/priorities")
     def literature_priorities(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:

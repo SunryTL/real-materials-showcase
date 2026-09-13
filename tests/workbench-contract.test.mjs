@@ -27,16 +27,16 @@ test("workbench communicates the candidate-only authority boundary", () => {
   assert.match(source, /不会覆盖权威数据库/);
 });
 
-test("publication figures are exposed as high-resolution raster assets", () => {
-  for (const name of [
-    "01_weekly_data_preparation",
-    "02_literature_distillation_workflow",
-    "03_database_landscape",
-    "04_m0_diagnostics",
-    "07_evidence_topology",
-    "08_emission_landscape",
-  ]) {
+test("weekly figures stay frozen while database figures use a versioned refresh API", () => {
+  for (const name of ["01_weekly_data_preparation", "02_literature_distillation_workflow"]) {
     assert.match(source, new RegExp(name));
     assert.equal(existsSync(new URL(`../public/workbench/figures/${name}.png`, import.meta.url)), true);
   }
+  for (const path of [
+    "/api/v1/figures/render",
+    "/api/v1/figures/jobs/{job_id}",
+    "/api/v1/figures/releases/latest",
+  ]) assert.ok(api.includes(path));
+  assert.match(source, /刷新数据库科研图/);
+  assert.match(source, /统计CSV/);
 });

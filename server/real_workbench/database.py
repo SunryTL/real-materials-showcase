@@ -83,6 +83,19 @@ CREATE TABLE IF NOT EXISTS audit_events (
   after_json TEXT,
   created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS figure_jobs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  status TEXT NOT NULL,
+  stage TEXT NOT NULL,
+  progress INTEGER NOT NULL DEFAULT 0,
+  message TEXT NOT NULL DEFAULT '',
+  database_version TEXT NOT NULL,
+  release_path TEXT,
+  error_message TEXT,
+  created_by INTEGER NOT NULL REFERENCES users(id),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 """
 
 
@@ -90,6 +103,9 @@ def init_database(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(path) as connection:
         connection.executescript(SCHEMA_SQL)
+        columns={row[1] for row in connection.execute('PRAGMA table_info(package_reviews)')}
+        if 'reviewed_package_sha256' not in columns:
+            connection.execute('ALTER TABLE package_reviews ADD COLUMN reviewed_package_sha256 TEXT')
 
 
 @contextmanager

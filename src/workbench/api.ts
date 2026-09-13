@@ -68,6 +68,24 @@ export type CandidatePackage = {
   tables: Record<string, Record<string, string>[]>;
 };
 
+export type FigureRecord = {
+  id: string; title: string; path: string; statistics: string;
+  width_px: number; height_px: number; mode: string; sha256: string;
+  phenomenon: string; judgment: string; next_step: string;
+};
+
+export type FigureRelease = {
+  database_version: string; release_version: string; generated_at_utc: string;
+  asset_base_url: string; figures: FigureRecord[];
+  metrics: Record<string, number>; source_sha256: Record<string, string>;
+};
+
+export type FigureJob = {
+  id: number; status: "queued" | "running" | "complete" | "failed";
+  stage: string; progress: number; message: string; database_version: string;
+  error_message?: string;
+};
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(path, { credentials: "include", ...options });
   if (!response.ok) {
@@ -122,4 +140,7 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ decision, notes }),
     }),
+  latestFigures: () => request<FigureRelease>("/api/v1/figures/releases/latest"),
+  renderFigures: () => request<{ job_id: number; database_version: string }>("/api/v1/figures/render", { method: "POST" }),
+  figureJob: (jobId: number) => request<FigureJob>(`/api/v1/figures/jobs/${jobId}`),
 };
