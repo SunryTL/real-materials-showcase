@@ -44,10 +44,12 @@ test('public intake is honest about local operation and still exposes current re
   await page.getByRole('table', { name: '当前正式数据库预览' }).waitFor();
 });
 
-test('point cloud uses the enhanced shader contract without changing its one-point-per-record invariant', () => {
+test('point cloud exposes evidence galaxy and PCA modes without inventing random topology', () => {
   const source = readFileSync(new URL('../src/workbench/ScientificPointCloud.tsx', import.meta.url), 'utf8');
   assert.match(source, /ShaderMaterial/);
-  assert.match(source, /one observation per vertex/i);
-  assert.match(source, /projection plane/i);
+  assert.match(source, /证据星系/);
+  assert.match(source, /PCA化学空间/);
+  assert.match(source, /buildEvidenceGalaxy/);
+  assert.match(source, /UnrealBloomPass/);
   assert.doesNotMatch(source, /Math\.random/);
 });

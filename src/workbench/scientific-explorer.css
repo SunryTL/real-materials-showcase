@@ -33,11 +33,16 @@
 .science-legend small { color: #536977; }
 .science-cloud { margin-top: 52px; }
 .science-cloud-actions { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
-.science-cloud-frame { position: relative; margin-top: 18px; height: clamp(360px, 32vw, 500px); }
+.science-view-switch { display: inline-flex; align-items: center; padding: 3px; background: #eaf0f3; border-radius: 10px; }
+.science-view-switch button { border: 0; border-radius: 8px; padding: 9px 13px; background: transparent; color: #526a78; font: inherit; font-size: 12px; cursor: pointer; }
+.science-view-switch button[aria-pressed="true"] { background: #092335; color: #eaffff; box-shadow: 0 7px 18px #071c2929; }
+.science-view-switch button:focus-visible { outline: 2px solid #36b8aa; outline-offset: 2px; }
+.science-cloud-frame { position: relative; margin-top: 18px; height: clamp(470px, 42vw, 660px); overflow: hidden; background: #02070e; }
 .science-webgl { width: 100%; height: 100%; touch-action: none; }
 .science-webgl canvas { display: block; }
 .science-cloud-note { display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between; font-size: 12px; color: #536977; }
 .science-cloud-fallback { position: absolute; inset: 30% 15% auto; color: #536977; text-align: center; }
+.science-galaxy-tooltip { background: #071722ec; color: #dff7f6; border: 1px solid #3e7d8959; box-shadow: 0 18px 44px #0009; backdrop-filter: blur(12px); }
 .science-method { font-size: 12px; color: #536977; padding: 20px 0; }
 .science-method summary, .science-records summary, .science-archive > summary { cursor: pointer; padding: 10px 0; font-weight: 600; color: #345566; }
 .science-method p { overflow-wrap: anywhere; }
@@ -80,4 +85,4 @@
 @media (max-width: 600px) { .science-canvas-wrap canvas { min-width: 1100px; } }
 @media (prefers-reduced-motion: reduce) { .science-loading-line { animation: none; } }
 @media (max-width: 900px) { .science-explorer { padding: 22px 18px; } .science-cloud header { flex-direction: column; } .science-filters { gap: 12px; } .science-legend { margin-left: 0; margin-right: 0; } .science-coverage { margin: 0; } }
-@media (max-width: 600px) { .science-intro { flex-direction: column; gap: 14px; } .science-intro h2 { font-size: 24px; } .science-filters label { width: calc(50% - 6px); flex: auto; min-width: 0; } .science-filters select { width: 100%; max-width: 100%; } .science-filters > button { width: 100%; } .science-tabs { gap: 0; justify-content: space-between; } .science-tabs button { font-size: 13px; } .science-chart figcaption { gap: 10px; } .science-chart h3, .science-cloud h3 { font-size: 16px; } .science-chart figcaption p { font-size: 12px; } .science-chart figcaption .science-action { font-size: 11px; padding: 7px; } .science-canvas-wrap { overflow-x: auto; } .science-canvas-wrap canvas { width: 760px; max-width: none; } .science-cloud-frame { height: 360px; } .science-cloud-actions { gap: 8px; } .science-cloud-actions label { width: 100%; } .science-cloud-actions select { width: 100%; max-width: none; } .science-legend small { display: none; } .science-scope { gap: 8px; } .science-version { width: 100%; margin-left: 0; } .science-archive { padding: 12px; } }
+@media (max-width: 600px) { .science-intro { flex-direction: column; gap: 14px; } .science-intro h2 { font-size: 24px; } .science-filters label { width: calc(50% - 6px); flex: auto; min-width: 0; } .science-filters select { width: 100%; max-width: 100%; } .science-filters > button { width: 100%; } .science-tabs { gap: 0; justify-content: space-between; } .science-tabs button { font-size: 13px; } .science-chart figcaption { gap: 10px; } .science-chart h3, .science-cloud h3 { font-size: 16px; } .science-chart figcaption p { font-size: 12px; } .science-chart figcaption .science-action { font-size: 11px; padding: 7px; } .science-canvas-wrap { overflow-x: auto; } .science-canvas-wrap canvas { width: 760px; max-width: none; } .science-cloud-frame { height: 430px; } .science-cloud-actions { gap: 8px; } .science-view-switch { width: 100%; } .science-view-switch button { flex: 1; } .science-cloud-actions label { width: 100%; } .science-cloud-actions select { width: 100%; max-width: none; } .science-legend small { display: none; } .science-scope { gap: 8px; } .science-version { width: 100%; margin-left: 0; } .science-archive { padding: 12px; } }
