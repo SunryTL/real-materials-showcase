@@ -30,8 +30,8 @@ test('GitHub Pages mode is read-only, backend-free and renders the audited explo
   await page.getByText(/77 个样品 · 13 个 DOI · 1 个家族/).waitFor();
   assert.equal(apiRequests.length, 0);
   assert.equal(await page.locator('input[type=file]').count(), 0);
-  await page.getByRole('button', { name: '文献处理' }).click();
-  await page.getByText('交给 Codex 整理', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '数据录入' }).click();
+  await page.getByRole('button', { name: '复制Codex任务' }).waitFor();
   assert.equal(await page.getByText('启动AI蒸馏', { exact: true }).count(), 0);
 });
 

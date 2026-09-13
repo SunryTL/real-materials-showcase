@@ -68,6 +68,11 @@ export type CandidatePackage = {
   tables: Record<string, Record<string, string>[]>;
 };
 
+export type CodexHandoff = {
+  document_id: number; doi: string; sha256: string; target_family: string | null;
+  target_fields: string[]; task: string; authority_boundary: "candidate_only";
+};
+
 export type FigureRecord = {
   id: string; title: string; path: string; statistics: string;
   width_px: number; height_px: number; mode: string; sha256: string;
@@ -112,6 +117,10 @@ export const api = {
     files.forEach((file) => body.append("files", file));
     return request<{ items: unknown[] }>("/api/v1/documents", { method: "POST", body });
   },
+  importCandidates: (file: File, documentId: number) => {
+    const body = new FormData(); body.append("file", file); body.append("document_id", String(documentId));
+    return request<{ status: string; tables: string[]; row_counts: Record<string, number>; job_id: number; authority_write_enabled: false }>("/api/v1/candidate-imports", { method: "POST", body });
+  },
   scan: () => request<{ scanned: number }>("/api/v1/documents/scan", { method: "POST" }),
   updateDocument: (id: number, doi: string, family: string, fields: string[]) =>
     request<DocumentRecord>(`/api/v1/documents/${id}`, {
@@ -125,6 +134,8 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ confirm_send_to_openai: true }),
     }),
+  codexHandoff: (id: number) =>
+    request<CodexHandoff>(`/api/v1/documents/${id}/codex-handoff`, { method: "POST" }),
   databaseHealth: () => request<DatabaseHealth>("/api/v1/database/health"),
   priorities: () => request<{ items: { doi: string; route: string; priority: string }[]; rule: string }>("/api/v1/literature/priorities"),
   candidatePackage: (jobId: number) => request<CandidatePackage>(`/api/v1/packages/${jobId}`),

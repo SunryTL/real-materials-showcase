@@ -48,7 +48,7 @@ const PAGE_META: Record<Page, { title: string; subtitle: string }> = {
     title: "科研工作台",
     subtitle: "论文、候选数据和数据库状态的统一入口",
   },
-  inbox: { title: "文献处理", subtitle: "PDF查重、DOI确认与AI蒸馏任务" },
+  inbox: { title: "文献处理", subtitle: "PDF查重、DOI确认、Codex交接与候选表导入" },
   review: {
     title: "七表审核",
     subtitle: "逐字段核对样品、光谱、结构、工艺与来源证据",
@@ -65,8 +65,8 @@ const PAGE_META: Record<Page, { title: string; subtitle: string }> = {
 
 const STATUS_LABEL: Record<string, string> = {
   metadata_needs_review: "待确认DOI",
-  ready_for_extraction: "可以蒸馏",
-  extracting: "AI蒸馏中",
+  ready_for_extraction: "可交给Codex",
+  extracting: "整理中",
   candidate_ready: "候选包待审核",
   failed: "需要处理",
 };
@@ -417,6 +417,8 @@ function InboxPage({
   const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [candidateFile, setCandidateFile] = useState<File | null>(null);
+  const [candidateDocumentId, setCandidateDocumentId] = useState<number>(documents[0]?.id || 0);
   const [confirming, setConfirming] = useState<DocumentRecord | null>(null);
 
   async function upload() {
@@ -447,6 +449,16 @@ function InboxPage({
       setBusy(false);
     }
   }
+  async function importCandidate() {
+    if (!candidateFile || !candidateDocumentId) return;
+    setBusy(true); setMessage("");
+    try {
+      const result = await api.importCandidates(candidateFile, candidateDocumentId);
+      setMessage(`七表候选包 #${result.job_id} 已进入人工审核：${result.tables.length}张表；尚未写入正式数据库。`);
+      setCandidateFile(null); await reload();
+    } catch (error) { setMessage(error instanceof Error ? error.message : "候选包导入失败"); }
+    finally { setBusy(false); }
+  }
 
   return (
     <>
@@ -458,7 +470,7 @@ function InboxPage({
           <div>
             <p className="wb-overline">PDF INBOX</p>
             <h2>上传论文或扫描本地未处理文件夹</h2>
-            <p>系统先计算SHA-256和识别DOI候选，用户确认后才允许发送给AI。</p>
+            <p>系统先计算SHA-256和识别DOI；确认后生成Codex交接文本，完成的七表再回传候选区。</p>
           </div>
         </div>
         <div className="wb-upload-actions">
@@ -490,6 +502,12 @@ function InboxPage({
             <FolderSearch size={16} />
             扫描本地目录
           </button>
+          <label className="wb-button ghost">
+            <ListChecks size={16} />选择七表候选
+            <input type="file" accept=".xlsx,.zip" onChange={event => setCandidateFile(event.target.files?.[0] || null)} />
+          </label>
+          <select aria-label="候选包关联论文" value={candidateDocumentId} onChange={event => setCandidateDocumentId(Number(event.target.value))}><option value={0}>选择关联论文</option>{documents.map(doc => <option key={doc.id} value={doc.id}>{doc.doi_confirmed || doc.canonical_filename}</option>)}</select>
+          <button className="wb-button ghost" disabled={!candidateFile || !candidateDocumentId || busy} onClick={importCandidate}>导入候选包</button>
         </div>
         {message && <p className="wb-inline-message">{message}</p>}
       </section>
@@ -568,7 +586,7 @@ function InboxPage({
                         {doc.workflow_status === "metadata_needs_review"
                           ? "确认元数据"
                           : doc.workflow_status === "ready_for_extraction"
-                            ? "启动AI"
+                            ? "交给Codex"
                             : "查看详情"}
                         <ChevronRight size={14} />
                       </button>
@@ -730,7 +748,7 @@ function DocumentDrawer({
           {document.workflow_status === "ready_for_extraction" && (
             <button className="wb-button secondary" onClick={onExtract}>
               <Sparkles size={16} />
-              启动AI蒸馏
+              生成Codex交接
             </button>
           )}
           <button className="wb-button primary" onClick={save}>
@@ -755,11 +773,14 @@ function ExtractionConfirm({
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [task, setTask] = useState("");
   async function start() {
     setBusy(true);
     try {
-      await api.extract(document.id);
-      onDone();
+      const handoff = await api.codexHandoff(document.id);
+      setTask(handoff.task);
+      await navigator.clipboard.writeText(handoff.task).catch(() => undefined);
+      setBusy(false);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "启动失败");
       setBusy(false);
@@ -771,16 +792,15 @@ function ExtractionConfirm({
         <div className="wb-confirm-icon">
           <Bot size={25} />
         </div>
-        <p className="wb-overline">PER-PAPER CONSENT</p>
-        <h2>确认发送本篇论文给OpenAI</h2>
+        <p className="wb-overline">CODEX HANDOFF</p>
+        <h2>把本篇论文交给Codex整理</h2>
         <p>
-          AI将读取 <b>{document.canonical_filename}</b>
-          ，按照GitHub固定工作流生成七张候选表。模型、提示词版本、文件哈希和Token用量会被记录。
+          REAL只生成 <b>{document.canonical_filename}</b> 的可审计任务文本，不在网页中上传论文到第三方API。请在Codex中附加本机PDF并执行该任务。
         </p>
         <ul>
           <li>
             <CheckCircle2 size={15} />
-            只生成候选数据包
+            Codex只生成七表候选包
           </li>
           <li>
             <CheckCircle2 size={15} />
@@ -791,20 +811,20 @@ function ExtractionConfirm({
             PDF处理后仍只保存在本机
           </li>
         </ul>
-        <label className="wb-consent">
+        {!task && <label className="wb-consent">
           <input
             type="checkbox"
             checked={confirmed}
             onChange={(event) => setConfirmed(event.target.checked)}
           />
-          我确认本篇PDF可以发送至OpenAI API进行科研数据蒸馏
-        </label>
+          我确认已核对DOI、目标字段和PDF哈希，可以生成Codex交接文本
+        </label>}
+        {task && <pre className="wb-handoff-task">{task}</pre>}
         {error && <p className="wb-form-error">{error}</p>}
         <div>
-          <button className="wb-button ghost" onClick={onClose}>
-            返回
-          </button>
-          <button
+          <button className="wb-button ghost" onClick={task ? onDone : onClose}>{task ? "完成交接" : "返回"}</button>
+          {task && <button className="wb-button secondary" onClick={() => navigator.clipboard.writeText(task)}>复制任务文本</button>}
+          {!task && <button
             className="wb-button primary"
             disabled={!confirmed || busy}
             onClick={start}
@@ -814,8 +834,8 @@ function ExtractionConfirm({
             ) : (
               <Sparkles size={16} />
             )}
-            开始生成七表
-          </button>
+            生成并复制
+          </button>}
         </div>
       </section>
     </div>
@@ -1406,7 +1426,7 @@ export default function WorkbenchApp() {
             <span
               className={`status-dot ${apiReady ? "candidate_ready" : "failed"}`}
             />
-            <b>OpenAI {apiReady ? "已配置" : "待配置"}</b>
+            <b>Codex交接 {apiReady ? "就绪" : "本地模式"}</b>
           </div>
           <small>通过Tailscale可供课题组成员访问</small>
         </div>

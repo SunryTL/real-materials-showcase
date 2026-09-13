@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "database_version": "v1.3_20260725",
+  "rule": "优先补主流家族独立DOI，再补连续系列和结构字段",
+  "items": [
+    {"priority":1,"doi":"10.1111/jace.20497","title":"LuGdAG:Ce ceramic compositions as promising candidates for high CRI white light emitting diodes","target_routes":"Y-Lu/Lu-Gd固溶；LuGdAG","status":"待获取","next_action":"取得原文后按七表提取"},
+    {"priority":2,"doi":"10.1016/j.jlumin.2025.121115","title":"Effect of Ga3+ content on Ce3+-doped Lu2YGaxAl5-xO12 phosphor ceramics","target_routes":"Lu-Al-Ga；LuAGG","status":"待获取","next_action":"取得原文后按七表提取"},
+    {"priority":3,"doi":"10.1016/j.ceramint.2022.09.171","title":"Ce:YScAG phosphor-converted transparent ceramics for LED and LD lighting","target_routes":"Sc取代；Gd-Y-ScAG","status":"待获取","next_action":"取得原文后按七表提取"},
+    {"priority":4,"doi":"10.1016/j.jre.2022.04.029","title":"Y3MgAl3SiO12:Ce3+ transparent ceramics for high-power white lighting","target_routes":"Mg/Si耦合取代；YAMSG","status":"待获取","next_action":"取得原文后按七表提取"},
+    {"priority":5,"doi":"10.1111/jace.70737","title":"Spectral engineering of LuMASG:Ce3+ transparent ceramics","target_routes":"复杂Lu-Mg-Al-Si；GLMS","status":"待获取","next_action":"取得原文后按七表提取"},
+    {"priority":6,"doi":"10.26599/jac.2023.9220782","title":"Ca3Sc2Si3O12:Ce3+ transparent ceramics for laser lighting","target_routes":"CSS","status":"待获取","next_action":"核验许可并取得原文"},
+    {"priority":7,"doi":"10.1016/j.jlumin.2020.117544","title":"Ca2YHf2Ga3O12:Ce3+ garnet phosphors","target_routes":"Ca-Y-Hf-Ga","status":"待核验","next_action":"核验连续系列和室温PL主峰"},
+    {"priority":8,"doi":"10.1016/j.jallcom.2020.155469","title":"Ca2LaHf2Al3O12:Ce3+ broadband green phosphor","target_routes":"Ca-La-Hf-Al","status":"待核验","next_action":"核验Ce浓度系列与材料形态"},
+    {"priority":9,"doi":"10.1021/jp508409r","title":"Ce3+-doped Ca2LaZr2Ga3O12 garnet green-emitting phosphors","target_routes":"Ca-La-Zr-Ga；Lu-Ca-Mg-Si","status":"待核验","next_action":"核验外部记录与原文对应关系"}
+  ]
+}
