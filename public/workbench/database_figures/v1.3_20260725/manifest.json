@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "database_version": "v1.3_20260725",
+  "generated_at_utc": "2026-09-12T14:41:26.624750+00:00",
+  "style_contract": "journal-database-v1; derived from the approved drawing-thread master prompt",
+  "renderer": [
+    "pubfig-0.3.0"
+  ],
+  "source_sha256": {
+    "authority_workbook": "4e943dbed899f242bd71d0323f9569098b3de5dd3f20daa81d542ca6686b407f",
+    "database_summary": "450831daace91bcea870950eebd1ab7ac0030b6dc6e2efc3b11ef25955449520",
+    "core_snapshot": "c4994e3ab95ff3bf6dfb00be315c1c639940b233a377d391bb7fa5bb27837e88",
+    "m0_training": "60ea3766b6c2d5e1db12b9e15ae83ebce34c10b45cc06d8d14ba8afe7f939db3",
+    "family_index": "680b26abdc4cf6cf2f4e93b45d100a5cf106aa5c24d44d68f717cff55ceee33f"
+  },
+  "metrics": {
+    "total_samples": 255,
+    "core_samples": 132,
+    "strict_pl_ple": 53,
+    "core_doi": 27,
+    "families": 19,
+    "m0_ready": 131,
+    "m1_structure_ready": 32
+  },
+  "figures": [
+    {
+      "id": "figure_01_emission_space",
+      "title": "数据组成与发射空间",
+      "path": "figure_01_emission_space.png",
+      "statistics": "statistics/figure_01_emission_space.csv",
+      "width_px": 4500,
+      "height_px": 2550,
+      "mode": "current",
+      "sha256": "1c3a2784ade1c0eda51b4d81a4bde238cdae5479e8affb8753d44efd08b7c722",
+      "phenomenon": "132个核心样品覆盖19类材料家族，发射峰按家族呈现不同中心和离散范围。",
+      "judgment": "数据库已经覆盖主要发射区间，但各家族样本量和独立证据仍不均衡。",
+      "next_step": "优先补充主力家族的新DOI和连续系列，避免只增加同一论文中的近重复样品。"
+    },
+    {
+      "id": "figure_02_descriptor_space",
+      "title": "化学与描述符空间",
+      "path": "figure_02_descriptor_space.png",
+      "statistics": "statistics/figure_02_descriptor_space.csv",
+      "width_px": 4500,
+      "height_px": 2550,
+      "mode": "current",
+      "sha256": "a743f1c776037c02b6fbbd6b0c1924e19b0d4b0383d662c8d7e3ee78eb0e85a6",
+      "phenomenon": "PCA将36个组成描述符投影到统一坐标，显示当前样品在A位和B/C位取代空间中的覆盖。",
+      "judgment": "二维投影只用于观察覆盖、聚集和空白区域，不代表物理因果。",
+      "next_step": "新增数据优先覆盖当前化学空间中的空白区域，并保留材料形态和来源标签。"
+    },
+    {
+      "id": "figure_03_evidence_quality",
+      "title": "字段完整度与证据质量",
+      "path": "figure_03_evidence_quality.png",
+      "statistics": "statistics/figure_03_evidence_quality.csv",
+      "width_px": 4500,
+      "height_px": 2550,
+      "mode": "current",
+      "sha256": "938d260ddb77d7bb38365c29775aadc94ded3ec9940f3bcf4ab122a46671ec00",
+      "phenomenon": "总库255条记录经过核心、光谱配对和结构资格逐层筛选。",
+      "judgment": "组成和室温PL覆盖较高，局域结构、效率及严格PL/PLE仍是主要缺口。",
+      "next_step": "原文蒸馏时优先登记可追溯的PLE、局域结构、效率和测试条件。"
+    },
+    {
+      "id": "figure_04_independence_balance",
+      "title": "独立证据与数据平衡",
+      "path": "figure_04_independence_balance.png",
+      "statistics": "statistics/figure_04_independence_balance.csv",
+      "width_px": 4500,
+      "height_px": 2550,
+      "mode": "current",
+      "sha256": "89f796131497e2a04aadc1aea65c10ee5233b05ac8f49d18c276309f21a33181",
+      "phenomenon": "核心集包含27个独立DOI；目前仍有13个家族只有一个DOI支撑。",
+      "judgment": "样品行数不能代替独立论文证据，单篇连续系列可能放大表面样本量。",
+      "next_step": "先补主流家族的第二和第三篇独立论文，再使用相同分组合同复跑模型。"
+    },
+    {
+      "id": "figure_05_relationship_readiness",
+      "title": "相关结构与分层模型准备度",
+      "path": "figure_05_relationship_readiness.png",
+      "statistics": "statistics/figure_05_relationship_readiness.csv",
+      "width_px": 4500,
+      "height_px": 2550,
+      "mode": "current",
+      "sha256": "54b17d927fbd317e5fc0af7a295c6db951486a88a3b2f7937d0a000342d5376b",
+      "phenomenon": "图中同时展示字段可用量、成对样本量、Spearman方向和分层模型资格。",
+      "judgment": "相关性用于发现值得验证的关系，不解释为因果；低样本关系保持空心。",
+      "next_step": "优先补充能够同时连接组成、结构、PL/PLE和工艺的高价值样品。"
+    },
+    {
+      "id": "figure_06_version_delta",
+      "title": "数据库版本变化",
+      "path": "figure_06_version_delta.png",
+      "statistics": "statistics/figure_06_version_delta.csv",
+      "width_px": 4500,
+      "height_px": 2550,
+      "mode": "baseline",
+      "sha256": "8d2c7e3cd5d28de90d3dc901bd0114847940cb6b453549111ed3134fe6b61349",
+      "phenomenon": "当前图集已冻结为首个可追溯基线版本。",
+      "judgment": "首版不虚构变化量；从下一正式版本起显示真实新增、修订和覆盖变化。",
+      "next_step": "后续每次发布正式快照后使用同一绘图合同刷新，并保留历史版本。"
+    }
+  ],
+  "authority_policy": "read-only input; candidates excluded until a formal snapshot is published"
+}

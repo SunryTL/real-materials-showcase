@@ -1,0 +1,8 @@
+record_type,metric,current,previous,delta
+baseline_metric,All audited records,255.0,,
+baseline_metric,Formal ceramic core,132.0,,
+baseline_metric,M0-ready samples,131.0,,
+baseline_metric,Strict PL / PLE pairs,53.0,,
+baseline_metric,Structure-ready M1,32.0,,
+baseline_metric,Independent core DOI,27.0,,
+baseline_metric,Material families,19.0,,

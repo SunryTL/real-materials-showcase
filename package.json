@@ -14,18 +14,22 @@
     "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
+    "lucide-react": "^0.544.0",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "three": "^0.186.0"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "6.0.2",
     "eslint": "9.39.4",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.4.26",
     "globals": "16.4.0",
+    "playwright-core": "^1.55.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.3",
     "vite": "^8.2.1"

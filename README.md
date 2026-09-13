@@ -4,7 +4,16 @@
 
 面向课题组与同行的公开科研窗口，展示 Ce³⁺ 石榴石荧光/透明陶瓷研究中的真实数据口径、物理机制、模型路线和版本状态。
 
-[打开 GitHub Pages](https://sunrytl.github.io/real-materials-showcase/) · [查看数据口径](#当前公开内容) · [了解模型边界](#模型边界)
+[打开 GitHub Pages](https://sunrytl.github.io/real-materials-showcase/) · [打开REAL数据库](https://sunrytl.github.io/real-materials-showcase/workbench#database) · [查看数据口径](#当前公开内容)
+
+## REAL科研工作台
+
+GitHub Pages提供无需本地后端的公开只读数据库科研图；私有模式继续在科研电脑／实验室私有网络运行，用于PDF上传、SHA-256查重、DOI确认、七表候选和审核。公开页不接收PDF和API密钥，并把文献整理明确交给Codex固定工作流。
+
+- [私有工作台安装与使用](WORKBENCH_README.md)
+- [产品定义](PRODUCT.md)
+- [2026-09-12 REAL科研工作台设计说明](docs/superpowers/specs/2026-09-12-real-research-workbench-design.md)
+- [阶段A：论文收件箱设计](docs/superpowers/specs/2026-09-12-real-workbench-stage-a-inbox-design.md)
 
 ## 当前公开内容
 
@@ -15,7 +24,7 @@
 - 输入字段完整度检查与模型层级判断；
 - Zhuo、Jiang、Lee 三项关键工作的可核验 DOI。
 
-统计来自私有研究库的脱敏审计结果，公开站不包含样品级数据库、论文原图、个人信息和未审核实验记录。
+统计来自私有研究库的脱敏审计结果。REAL数据库页包含用于科研图交互与复现的脱敏样品级字段（匿名样品ID、组成、家族、形态、PL、DOI、PCA坐标和字段覆盖），不包含原始PDF、权威Excel、密钥、个人信息或未审核实验记录。
 
 ## 模型边界
 

@@ -1,0 +1,1 @@
+{"schema_version":"1.0","tables":{"sample_master":["sample_id","full_formula"],"site_occupancy":["occupancy_id","sample_id"],"optical_measurement":["measurement_id","sample_id"],"ceramic_process":["process_id","sample_id"],"crystal_structure":["structure_id","sample_id"],"physical_descriptors":["descriptor_id","sample_id"],"data_source":["source_id","sample_id"]}}

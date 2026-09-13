@@ -1,0 +1,15 @@
+name: real-materials-m0
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - fastapi
+  - uvicorn
+  - python-multipart
+  - pypdf
+  - openai
+  - httpx
+  - pydantic
+  - pyyaml
+  - openpyxl
+  - pytest
