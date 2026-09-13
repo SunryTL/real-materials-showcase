@@ -32,13 +32,13 @@ type PublicManifest = {
 
 let publicManifestPromise: Promise<{ manifest: PublicManifest; root: string }> | null = null;
 
-async function publicManifest(signal: AbortSignal) {
+async function publicManifest() {
   if (!publicManifestPromise) {
     const root = `${import.meta.env.BASE_URL}workbench/public-data/`;
-    publicManifestPromise = fetch(`${root}latest.json`, { signal }).then(async response => {
+    publicManifestPromise = fetch(`${root}latest.json`).then(async response => {
       if (!response.ok) throw new Error(`公开数据索引读取失败 (${response.status})`);
       const latest = await response.json();
-      const manifestResponse = await fetch(`${root}${latest.release}`, { signal });
+      const manifestResponse = await fetch(`${root}${latest.release}`);
       if (!manifestResponse.ok) throw new Error(`公开数据清单读取失败 (${manifestResponse.status})`);
       return { manifest: await manifestResponse.json() as PublicManifest, root: `${root}releases/${latest.database_version}/` };
     }).catch(reason => { publicManifestPromise = null; throw reason; });
@@ -49,7 +49,7 @@ async function publicManifest(signal: AbortSignal) {
 export async function fetchExplorer(scope: ExplorerScope, signal: AbortSignal, publicMode = false): Promise<ExplorerData> {
   let response: Response;
   if (publicMode) {
-    const { manifest, root } = await publicManifest(signal);
+    const { manifest, root } = await publicManifest();
     const version = scope.version === 'latest' ? manifest.database_version : scope.version;
     if (version !== manifest.database_version || scope.status !== 'formal') throw new Error('公开页面只提供当前正式脱敏快照。');
     const key = `formal|${scope.family}|${scope.material_form}`;

@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Request, Response, UploadFile
+from fastapi import BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
@@ -29,6 +29,7 @@ from .packages import (
     GROUPING_COLUMNS,
     SEVEN_TABLE_NAMES,
     export_xlsx,
+    import_candidate_bundle,
     read_package,
     write_candidate_package,
 )
@@ -208,6 +209,50 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             items.append(register_pdf(path.read_bytes(), path.name, "scanned_local", user["id"], path.name))
         return {"items": items, "scanned": len(items)}
 
+    @app.post("/api/v1/candidate-imports")
+    async def import_candidate_tables(
+        file: UploadFile = File(...), document_id: int | None = Form(None), user: dict[str, Any] = Depends(current_user)
+    ) -> dict[str, Any]:
+        data = await file.read()
+        if len(data) > settings.max_pdf_mb * 1024 * 1024:
+            raise HTTPException(413, "候选表格文件过大")
+        try:
+            result = import_candidate_bundle(
+                output_root=settings.candidate_root,
+                schema_path=settings.schema_path,
+                filename=file.filename or "candidate.xlsx",
+                data=data,
+            )
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
+        with connect(settings.database_path) as connection:
+            job_id = None
+            if document_id is not None:
+                document = connection.execute("SELECT id FROM documents WHERE id=?", (document_id,)).fetchone()
+                if not document:
+                    raise HTTPException(404, "关联论文不存在")
+                now = utc_now()
+                cursor = connection.execute(
+                    "INSERT INTO jobs(document_id,status,stage,progress,message,model,prompt_version,package_path,created_by,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                    (document_id, "candidate_ready", "human_review", 100, "Codex七表候选已导入，等待人工审核", "codex_handoff", "database-workflow-v2", result["package_path"], user["id"], now, now),
+                )
+                job_id = cursor.lastrowid
+                connection.execute("UPDATE documents SET workflow_status='candidate_ready',updated_at=? WHERE id=?", (now, document_id))
+            _audit(
+                connection,
+                user["id"],
+                "import_candidate_tables",
+                "candidate_import",
+                None,
+                after={"sha256": result["sha256"], "filename": result["filename"]},
+            )
+        return {
+            **result,
+            "sample_rows": result["row_counts"].get("sample_master", 0),
+            "authority_write_enabled": False,
+            "job_id": job_id,
+        }
+
     @app.get("/api/v1/documents")
     def list_documents(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
         del user
@@ -298,6 +343,48 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except Exception as error:
             with connect(settings.database_path) as connection:
                 connection.execute("UPDATE jobs SET status='failed',stage='failed',message='蒸馏失败',error_message=?,updated_at=? WHERE id=?", (str(error), utc_now(), job_id))
+
+    @app.post("/api/v1/documents/{document_id}/codex-handoff")
+    def create_codex_handoff(
+        document_id: int, user: dict[str, Any] = Depends(current_user)
+    ) -> dict[str, Any]:
+        with connect(settings.database_path) as connection:
+            document = connection.execute(
+                "SELECT * FROM documents WHERE id=?", (document_id,)
+            ).fetchone()
+            if not document:
+                raise HTTPException(404, "文献不存在")
+            if not document["doi_confirmed"]:
+                raise HTTPException(409, "请先确认DOI和目标字段")
+            fields = json.loads(document["target_fields_json"])
+            task = (
+                "请先读取real-materials-research根README、STATUS、DECISIONS、"
+                "research/README以及research/database/EXTERNAL_DATA_COLLABORATION_PLAN.md。\n"
+                f"处理论文DOI：{document['doi_confirmed']}。PDF SHA-256：{document['sha256']}。\n"
+                f"目标家族：{document['target_family'] or '待核验'}；优先字段：{', '.join(fields) or '七表全部字段'}。\n"
+                "请核对题目、版本与哈希，按七表Schema生成候选数据和逐字段证据；"
+                "检查PL/PLE、单位、样品重复与分组。不要覆盖权威Excel或正式快照，"
+                "完成后给出核心／辅助／排除／待补证据建议，等待负责人确认。"
+            )
+            _audit(
+                connection,
+                user["id"],
+                "create_codex_handoff",
+                "document",
+                document_id,
+                after={"doi": document["doi_confirmed"], "pdf_sha256": document["sha256"]},
+            )
+        return {
+            "mode": "codex_handoff",
+            "document_id": document_id,
+            "doi": document["doi_confirmed"],
+            "pdf_sha256": document["sha256"],
+            "target_family": document["target_family"] or "",
+            "target_fields": fields,
+            "schema_version": "1.0",
+            "authority_boundary": "candidate_only",
+            "task": task,
+        }
 
     @app.post("/api/v1/documents/{document_id}/extract")
     def start_extraction(document_id: int, payload: ExtractionInput, background: BackgroundTasks, user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
