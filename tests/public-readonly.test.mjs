@@ -23,7 +23,7 @@ test('GitHub Pages mode is read-only, backend-free and renders the audited explo
   t.after(() => page.close());
   const apiRequests = [];
   page.on('request', request => { if (request.url().includes('/api/v1/')) apiRequests.push(request.url()); });
-  await page.goto(`${origin}/real-materials-showcase/workbench?mode=public#database`);
+  await page.goto(`${origin}/real-materials-showcase/#database`);
   await page.getByRole('heading', { name: '数据库状态' }).waitFor();
   await page.getByRole('img', { name: '发射波长分布' }).waitFor();
   await page.getByLabel('材料家族', { exact: true }).selectOption('YAG');

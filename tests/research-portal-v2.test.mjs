@@ -23,9 +23,13 @@ after(async () => {
 test('public REAL tells the research story and exposes the four durable surfaces', { skip }, async t => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
   t.after(() => page.close());
-  await page.goto(`${origin}/real-materials-showcase/workbench?mode=public#home`);
+  await page.goto(`${origin}/real-materials-showcase/#home`);
   await page.locator('.portal-hero h2').waitFor();
   assert.match(await page.locator('.portal-hero h2').innerText(), /把文献证据变成.*可检验的发射预测/s);
+  await page.getByText('中塞联合研究平台', { exact: true }).first().waitFor();
+  await page.getByText('REAL Predictions. Real Light.', { exact: true }).waitFor();
+  await page.getByText('真实预测，真切发光', { exact: true }).waitFor();
+  await page.getByText('Vinča Institute of Nuclear Sciences – National Institute of the Republic of Serbia, University of Belgrade', { exact: true }).waitFor();
   for (const label of ['首页', '数据录入', '文献整理', '数据库状态']) {
     assert.equal(await page.getByRole('button', { name: label, exact: true }).count(), 1);
   }
@@ -37,11 +41,22 @@ test('public REAL tells the research story and exposes the four durable surfaces
 test('public intake is honest about local operation and still exposes current records', { skip }, async t => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   t.after(() => page.close());
-  await page.goto(`${origin}/real-materials-showcase/workbench?mode=public#intake`);
+  await page.goto(`${origin}/real-materials-showcase/#intake`);
   await page.getByRole('heading', { name: /论文与候选表进入同一审核链/ }).waitFor();
   assert.equal(await page.locator('input[type=file]').count(), 0);
   await page.getByText(/公开页面不接收PDF/).waitFor();
   await page.getByRole('table', { name: '当前正式数据库预览' }).waitFor();
+});
+
+test('legacy public workbench URL canonicalizes to the single root entry', { skip }, async t => {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  t.after(() => page.close());
+  await page.goto(`${origin}/real-materials-showcase/workbench?mode=public#home`);
+  await page.locator('.portal-hero h2').waitFor();
+  const url = new URL(page.url());
+  assert.equal(url.pathname, '/real-materials-showcase/');
+  assert.equal(url.search, '');
+  assert.equal(url.hash, '#home');
 });
 
 test('point cloud exposes evidence galaxy and PCA modes without inventing random topology', () => {

@@ -16,6 +16,13 @@ type Priority = {
 const TASK = `请读取 real-materials-research 根 README.md、STATUS.md、DECISIONS.md、research/README.md 和 research/database/EXTERNAL_DATA_COLLABORATION_PLAN.md。处理我上传的论文：核对 DOI、题目、版本与 SHA-256，按七表 Schema 生成候选数据和逐字段证据；检查 PL/PLE、单位、样品重复与分组。不要覆盖权威 Excel 或正式快照，完成后给出核心／辅助／排除／待补证据建议，等待我确认。`;
 const privateWorkbench = import.meta.env.VITE_REAL_PRIVATE_URL || 'http://127.0.0.1:5173/real-materials-showcase/workbench#inbox';
 
+const REAL_PRINCIPLES = [
+  ['Reality', '真实', '可追溯数据与可核验研究证据'],
+  ['Exact', '精确', '面向发光性能的定量建模与严格验证'],
+  ['Actionable', '可行动', '连接候选筛选、材料设计与实验反馈'],
+  ['Light', '光与启发', '服务稀土发光材料与极端功率照明'],
+];
+
 function usePortalData() {
   const [data, setData] = useState<ExplorerData | null>(null);
   const [priorities, setPriorities] = useState<Priority[]>([]);
@@ -49,6 +56,10 @@ function HomePage({ data, go }: { data: ExplorerData | null; go: (page: Page) =>
         <span className="portal-status"><i />AUDITED · VERSIONED · REPRODUCIBLE</span>
         <h2>把文献证据变成<em>可检验的发射预测</em></h2>
         <p>REAL围绕Ce³⁺石榴石陶瓷，把散落在论文中的组成、光谱、结构与工艺证据整理成可追溯数据库，再用严格分组的黑箱基线和物理分层模型回答“为什么发出这个波长”。</p>
+        <div className="portal-hero-partners" aria-label="中塞联合研究单位">
+          <p><b>江苏师范大学</b><span>Jiangsu Normal University</span></p>
+          <p><b>贝尔格莱德大学塞尔维亚文卡国家核科学研究所</b><span>Vinča Institute of Nuclear Sciences</span></p>
+        </div>
         <div className="portal-actions">
           <button className="wb-button primary" onClick={() => go('database')}>探索数据库 <ArrowRight size={16}/></button>
           <button className="wb-button portal-quiet" onClick={() => go('literature')}>查看文献证据</button>
@@ -61,6 +72,16 @@ function HomePage({ data, go }: { data: ExplorerData | null; go: (page: Page) =>
         <div className="orbit-node node-excite"><FlaskConical size={18}/><b>M2</b><small>最低5d₁</small></div>
         <div className="orbit-node node-relax"><Layers3 size={18}/><b>M3</b><small>表观Stokes</small></div>
         <div className="orbit-node node-ceramic"><Microscope size={18}/><b>M5</b><small>陶瓷观测修正</small></div>
+      </div>
+    </section>
+    <section className="portal-philosophy" aria-labelledby="real-philosophy-title">
+      <header>
+        <p>Rare-Earth Absorption and Luminescence</p>
+        <h3 id="real-philosophy-title">REAL Predictions. Real Light.</h3>
+        <span>真实预测，真切发光</span>
+      </header>
+      <div className="portal-principles">
+        {REAL_PRINCIPLES.map(([name, cn, description]) => <article key={name}><b>{name}</b><span>{cn}</span><p>{description}</p></article>)}
       </div>
     </section>
     <section className="portal-metrics" aria-label="当前数据库证据规模">
@@ -79,6 +100,11 @@ function HomePage({ data, go }: { data: ExplorerData | null; go: (page: Page) =>
       <h3>每一次数据库更新，都必须回到论文证据。</h3>
       <div>{['发现数据缺口','取得原文','Codex七表候选','负责人审核','正式快照','REAL重算'].map((item, index) => <span key={item}><i>{String(index + 1).padStart(2, '0')}</i>{item}</span>)}</div>
     </section>
+    <footer className="portal-collaboration-footer">
+      <div><b>中塞联合研究平台</b><span>China–Serbia Collaborative Research</span></div>
+      <p><b>江苏师范大学</b><span>江苏省先进激光材料与器件重点实验室</span><small>Jiangsu Normal University · Jiangsu Key Laboratory of Advanced Laser Materials and Devices</small></p>
+      <p><b>贝尔格莱德大学塞尔维亚文卡国家核科学研究所</b><small>Vinča Institute of Nuclear Sciences – National Institute of the Republic of Serbia, University of Belgrade</small></p>
+    </footer>
   </div>;
 }
 
@@ -134,12 +160,12 @@ export default function PublicWorkbenchApp() {
   const copyTask = async () => { await navigator.clipboard.writeText(TASK); setCopied(true); window.setTimeout(() => setCopied(false), 1800); };
   return <div className="wb-shell wb-public-shell">
     <aside className={`wb-sidebar ${mobile ? 'open' : ''}`}>
-      <div className="wb-sidebar-brand"><span>R</span><div><b>REAL</b><small>RESEARCH WORKBENCH</small></div></div>
+      <div className="wb-sidebar-brand"><span>R</span><div><b>REAL</b><small>RESEARCH WORKBENCH</small><small className="wb-collab-mark">中塞联合研究平台</small></div></div>
       <nav>{nav.map(({ id, label, icon: Icon }) => <button key={id} aria-label={label} className={page === id ? 'active' : ''} onClick={() => go(id)}><Icon size={18}/><span>{label}</span>{page === id && <i/>}</button>)}</nav>
       <div className="wb-sidebar-system"><p>公开研究版本</p><div><span className="status-dot candidate_ready"/><b>{data?.version || '正在读取'}</b></div><div><span className="status-dot candidate_ready"/><b>审核后脱敏</b></div><small>PDF、权威Excel、候选证据与API Key不进入公开构建</small></div>
       <a className="wb-user" href="https://github.com/SunryTL/real-materials-research" target="_blank" rel="noreferrer"><span><BookOpenCheck size={16}/></span><div><b>科研主库</b><small>规则与证据索引</small></div><ExternalLink size={16}/></a>
     </aside>
-    <main className="wb-main"><header className="wb-topbar"><button className="icon-button mobile-menu" onClick={() => setMobile(!mobile)}><Menu size={20}/></button><div><h1>{meta[0]}</h1><span>{meta[1]}</span></div><div className="wb-top-status"><div><small>数据库版本</small><b>{data?.version || '载入中'}</b></div><div><small>绘图规范</small><b>master-v2-individual</b></div></div></header>
+    <main className="wb-main"><header className="wb-topbar"><button className="icon-button mobile-menu" onClick={() => setMobile(!mobile)} aria-label="打开导航"><Menu size={20}/></button><div className="wb-topbar-title"><h1>{meta[0]}</h1><span>{meta[1]}</span></div><div className="wb-top-collaboration"><small>CHINA–SERBIA COLLABORATIVE RESEARCH</small><b>中塞联合研究平台</b></div><div className="wb-top-status"><div><small>数据库版本</small><b>{data?.version || '载入中'}</b></div><div><small>绘图规范</small><b>master-v2-individual</b></div></div></header>
       <div className={`wb-content ${page === 'home' ? 'portal-content-home' : ''}`}>
         {error && <p className="portal-data-error">{error}。数据库主页面仍可单独重试。</p>}
         {page === 'home' && <HomePage data={data} go={go}/>}
