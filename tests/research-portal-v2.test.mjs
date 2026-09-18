@@ -24,13 +24,13 @@ test('public REAL tells the research story and exposes the four durable surfaces
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
   t.after(() => page.close());
   await page.goto(`${origin}/real-materials-showcase/#home`);
-  await page.locator('.portal-hero h2').waitFor();
-  assert.match(await page.locator('.portal-hero h2').innerText(), /把文献证据变成.*可检验的发射预测/s);
-  await page.getByText('中塞联合研究平台', { exact: true }).first().waitFor();
-  await page.getByText('REAL Predictions. Real Light.', { exact: true }).waitFor();
+  await page.locator('.real-hero h1').waitFor();
+  assert.match(await page.locator('.real-hero h1').innerText(), /REAL Predictions.*Real Light/s);
+  assert.equal(await page.locator('.wb-sidebar').count(), 0);
+  await page.getByRole('heading', { name: /REAL Predictions.*Real Light/ }).waitFor();
   await page.getByText('真实预测，真切发光', { exact: true }).waitFor();
   await page.getByText('Vinča Institute of Nuclear Sciences – National Institute of the Republic of Serbia, University of Belgrade', { exact: true }).waitFor();
-  for (const label of ['首页', '数据录入', '文献整理', '数据库状态']) {
+  for (const label of ['首页', '合作研究', '数据录入', '文献整理', '数据库']) {
     assert.equal(await page.getByRole('button', { name: label, exact: true }).count(), 1);
   }
   await page.getByRole('button', { name: '文献整理', exact: true }).click();
@@ -52,7 +52,7 @@ test('legacy public workbench URL canonicalizes to the single root entry', { ski
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   t.after(() => page.close());
   await page.goto(`${origin}/real-materials-showcase/workbench?mode=public#home`);
-  await page.locator('.portal-hero h2').waitFor();
+  await page.locator('.real-hero h1').waitFor();
   const url = new URL(page.url());
   assert.equal(url.pathname, '/real-materials-showcase/');
   assert.equal(url.search, '');
@@ -67,4 +67,28 @@ test('point cloud exposes evidence galaxy and PCA modes without inventing random
   assert.match(source, /buildEvidenceGalaxy/);
   assert.match(source, /UnrealBloomPass/);
   assert.doesNotMatch(source, /Math\.random/);
+});
+
+test('top navigation supports history, cooperation anchors and the mobile menu', { skip }, async t => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  t.after(() => page.close());
+  await page.goto(`${origin}/real-materials-showcase/#home`);
+  await page.getByRole('button', { name: '打开导航', exact: true }).click();
+  await page.getByRole('button', { name: '合作研究', exact: true }).click();
+  assert.equal(new URL(page.url()).hash, '#cooperation');
+  await page.waitForFunction(() => document.querySelector('#cooperation').getBoundingClientRect().top < 150);
+  await page.getByRole('button', { name: '打开导航', exact: true }).click();
+  await page.getByRole('button', { name: '文献整理', exact: true }).click();
+  await page.getByRole('heading', { name: /已整理文献与下一批证据/ }).waitFor();
+  await page.goBack();
+  await page.locator('.real-hero h1').waitFor();
+  await page.goForward();
+  await page.getByRole('heading', { name: /已整理文献与下一批证据/ }).waitFor();
+  await page.reload();
+  await page.getByRole('heading', { name: /已整理文献与下一批证据/ }).waitFor();
+  await page.getByRole('link', { name: '跳到正文' }).focus();
+  await page.keyboard.press('Enter');
+  assert.equal(new URL(page.url()).hash, '#literature');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'main-content');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
 });

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-18T01:54:41Z",
+  "title": "Design System: REAL Institutional Public Identity",
+  "extensions": {
+    "colorMeta": {
+      "institutional-navy": { "role": "primary", "displayName": "Institutional Navy" },
+      "research-teal": { "role": "secondary", "displayName": "Research Teal" },
+      "white": { "role": "neutral", "displayName": "White" },
+      "cooperation-surface": { "role": "neutral", "displayName": "Cool Cooperation Surface" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Manrope Display", "purpose": "Large Latin hero headline; Chinese fallback supplied by Noto Sans SC." },
+      "body": { "displayName": "Chinese Body", "purpose": "Readable institutional copy with Noto Sans SC and system fallbacks." }
+    },
+    "shadows": [
+      { "name": "mobile-navigation", "value": "0 12px 22px #102c4914", "purpose": "Separates the temporary mobile menu from page content." }
+    ],
+    "motion": [
+      { "name": "action-hover", "value": "background .15s", "purpose": "Button background transition; disabled by the institutional reduced-motion CSS." }
+    ],
+    "breakpoints": [
+      { "name": "mobile-max", "value": "600px" },
+      { "name": "menu-max", "value": "1000px" },
+      { "name": "compact-desktop-max", "value": "1200px" },
+      { "name": "wide-min", "value": "1700px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Filled teal entry to the public database.",
+      "html": "<a class=\"ds-primary\" href=\"#database\">探索数据库 <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-7-7 7 7-7 7\"/></svg></a>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;gap:24px;background:#197d86;color:#fff;padding:16px 27px;font:600 18px/1.75 'Noto Sans SC',system-ui,sans-serif;text-decoration:none;border:1px solid #197d86;border-radius:3px;transition:background .15s}.ds-primary:hover{background:#226772}.ds-primary:focus-visible{outline:3px solid #20a4b0;outline-offset:5px}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Secondary Action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined cooperation link, shown on its intended navy field.",
+      "html": "<div class=\"ds-dark-field\"><a class=\"ds-secondary\" href=\"#cooperation\">了解合作研究</a></div>",
+      "css": ".ds-dark-field{background:#102c49;padding:26px}.ds-secondary{display:inline-flex;align-items:center;justify-content:center;gap:24px;background:transparent;color:#fff;padding:16px 27px;font:600 18px/1.75 'Noto Sans SC',system-ui,sans-serif;text-decoration:none;border:1px solid #afc7d7;border-radius:3px;transition:background .15s}.ds-secondary:hover{background:#25425d}.ds-secondary:focus-visible{outline:3px solid #20a4b0;outline-offset:5px}@media(prefers-reduced-motion:reduce){.ds-secondary{transition:none}}"
+    },
+    {
+      "name": "Public Navigation",
+      "kind": "nav",
+      "description": "Current location and hover use a teal underline on white.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"主导航\"><a class=\"ds-nav-brand\" href=\"#home\">REAL</a><button aria-current=\"page\">首页</button><button>合作研究</button><button>数据库</button></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:25px;background:white;font-family:'Noto Sans SC',system-ui,sans-serif}.ds-nav-brand{color:#102c49;font:800 22px Manrope,sans-serif;padding-right:8px;text-decoration:none}.ds-nav button{background:none;border:0;padding:13px 0;color:#17334a;font-family:inherit;font-size:16px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}.ds-nav button[aria-current],.ds-nav button:hover{color:#146d76;border-bottom-color:#187e86}.ds-nav a:focus-visible,.ds-nav button:focus-visible{outline:3px solid #20a4b0;outline-offset:5px}"
+    },
+    {
+      "name": "Value Article",
+      "kind": "custom",
+      "description": "Flat bilingual value statement with a top rule.",
+      "html": "<article class=\"ds-value\"><h3>Reality <span>真实</span></h3><p>以可追溯数据与物理证据认识材料。</p></article>",
+      "css": ".ds-value{padding-block:23px;border-top:1px solid #c7d8df;background:#fff;font-family:'Noto Sans SC',system-ui,sans-serif}.ds-value h3{margin:0;font:800 36px/1.4 Manrope,sans-serif;color:#156e78;display:flex;align-items:baseline;gap:24px}.ds-value h3 span{font:600 22px 'Noto Sans SC',sans-serif;color:#17334a}.ds-value p{font-size:18px;line-height:1.75;margin:12px 0 0;color:#4e6374}"
+    },
+    {
+      "name": "Evidence Panel",
+      "kind": "card",
+      "refersTo": "evidence-panel",
+      "description": "Navy evidence container; this excerpt omits the external preview asset and live counts.",
+      "html": "<section class=\"ds-evidence\"><h3>组成、结构、光谱与工艺<br>在同一证据体系中相遇</h3><p>探索证据星系中的材料家族与文献归属，或切换至PCA化学空间，查看描述符空间中的样品分布。</p><a href=\"#database\">进入交互数据库 <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-7-7 7 7-7 7\"/></svg></a></section>",
+      "css": ".ds-evidence{background:#102c49;color:#fff;padding:42px;font-family:'Noto Sans SC',system-ui,sans-serif}.ds-evidence h3{margin:0;font-size:28px;line-height:1.55}.ds-evidence p{font-size:17px;line-height:1.9;color:#d0e2ed;margin:18px 0 0}.ds-evidence a{display:inline-flex;gap:18px;align-items:center;color:#74d8d0;margin-top:28px;font-size:18px;line-height:1.75;text-decoration:none}.ds-evidence a:focus-visible{outline:3px solid #20a4b0;outline-offset:5px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "REAL institutional research",
+    "overview": "The approved public identity combines a white institutional header, deep navy fields, restrained teal accents, and a strong typographic hero. Small original Jiangsu Normal University and University of Belgrade crests establish affiliation; readable bilingual names and generous spacing carry the institutional character.\n\nThis document records the implemented homepage and public header/footer from `src/workbench/institutional.css`, `InstitutionalHome.tsx`, and `PublicWorkbenchApp.tsx`, with the approved opening contract in `index.html`. It does not replace the existing evidence-galaxy-v1 visual system, private workbench, or inherited literature/intake components. PRODUCT.md supplies the enduring evidence and accessibility commitments; its broader legacy orange palette is not an instruction to add orange to this public identity.",
+    "keyCharacteristics": [
+      "White, navy, and teal institutional fields.",
+      "Small official university crests and clear bilingual typography.",
+      "Flat, spacious sections with fine rules and limited motion."
+    ],
+    "rules": [],
+    "dos": [
+      "Do preserve the approved white header, navy hero, teal accents, and small official university identities.",
+      "Do keep keyboard focus visible and state labels understandable without color alone.",
+      "Do derive displayed research counts from the current public snapshot."
+    ],
+    "donts": [
+      "Don't add photographs or a large crest strip to this approved public identity.",
+      "Don't restyle evidence-galaxy-v1 or the private workbench under this document's scope.",
+      "Don't introduce unsupported claims, invented metrics, or decorative model-number orbits."
+    ]
+  }
+}
