@@ -48,6 +48,20 @@ test('public intake is honest about local operation and still exposes current re
   await page.getByRole('table', { name: '当前正式数据库预览' }).waitFor();
 });
 
+test('institutional header links Vinča after Belgrade and fits desktop and mobile', { skip }, async t => {
+  const page = await browser.newPage();
+  t.after(() => page.close());
+  for (const width of [1920, 1440, 1024, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`${origin}/real-materials-showcase/#home`);
+    const marks = page.locator('.real-university-marks a');
+    assert.deepEqual(await marks.evaluateAll(links => links.map(link => link.href)), ['https://www.jsnu.edu.cn/', 'https://www.bg.ac.rs/', 'https://vin.bg.ac.rs/en/']);
+    await page.waitForFunction(() => [...document.querySelectorAll('.real-university-marks img')].every(img => img.complete && img.naturalWidth > 0));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `overflow at ${width}`);
+    assert.equal(await page.locator('.real-header-inner').evaluate(el => [...el.children].filter(c => getComputedStyle(c).display !== 'none').every(c => c.getBoundingClientRect().right <= innerWidth)), true);
+  }
+});
+
 test('legacy public workbench URL canonicalizes to the single root entry', { skip }, async t => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   t.after(() => page.close());

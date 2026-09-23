@@ -8,4 +8,6 @@ Official identity sources checked 2026-09-18. Institutional marks identify the p
 
 No generated logos, stock equipment photographs, proposal media or paper figures are published with this redesign.
 
+- `vinca-mark.png`: official Vinča Institute mobile emblem, https://vin.bg.ac.rs/files/images/site/vinca_logo_mobile.png (checked 2026-09-23). Original white transparent mark retained without redrawing or recolouring, displayed on a navy background. Institution link: https://vin.bg.ac.rs/en/ .
+
 `evidence-galaxy-preview.png` is a screenshot of REAL's existing public canvas (2026-09-18, evidence-galaxy-v1), not a photograph or a simulated dataset. The interactive database remains authoritative for current values.

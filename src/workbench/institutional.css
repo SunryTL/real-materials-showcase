@@ -11,6 +11,7 @@
 .real-university-marks img{width:46px;height:56px;object-fit:contain}
 .real-university-marks span{font-size:17px;font-weight:700;line-height:1.4}
 .real-university-marks small{display:block;font-size:10px;font-weight:500;margin-top:4px}
+.real-university-marks .real-vinca-mark img{width:46px;height:46px;background:#102c49;padding:5px;border-radius:3px;box-sizing:border-box}
 .real-header nav{display:flex;align-items:center;gap:25px}
 .real-header nav button{background:none;border:0;padding:13px 0;color:#17334a;font-size:16px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
 .real-header nav button[aria-current],.real-header nav button:hover{color:#146d76;border-bottom-color:#187e86}
@@ -66,3 +67,7 @@
 .real-footer-grid{align-items:start}
 .real-footer-grid>div{display:block;min-width:0}
 .real-evidence-preview{display:block;width:100%;height:auto;margin-bottom:28px}
+/* Compact institutional signature: preserve the official marks at every size. */
+@media(min-width:1201px) and (max-width:1500px){.real-header-inner{padding-inline:28px;gap:20px}.real-university-marks{gap:16px}.real-university-marks>a+a{padding-left:16px}.real-university-marks span{font-size:14px}.real-header nav{gap:18px}}
+@media(min-width:1001px) and (max-width:1200px){.real-university-marks>a{gap:8px}.real-university-marks{gap:12px}.real-university-marks>a+a{padding-left:12px}.real-university-marks img{width:36px;height:46px}.real-university-marks .real-vinca-mark img{width:36px;height:36px}.real-header nav{gap:14px}.real-header nav button{font-size:14px}}
+@media(max-width:600px){.real-university-marks{flex:1;gap:10px;justify-content:space-between}.real-university-marks>a{flex-direction:column;gap:4px;align-items:center}.real-university-marks>a+a{padding-left:10px}.real-university-marks span{font-size:11px;white-space:nowrap}.real-university-marks small{display:none}.real-university-marks .real-vinca-mark img{width:36px;height:36px;margin-block:2px}.real-header-inner{gap:12px}.real-menu{flex-shrink:0;padding:6px}}
