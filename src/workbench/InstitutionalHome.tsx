@@ -6,7 +6,7 @@ export function UniversityMarks() {
   return <div className="real-university-marks" aria-label="江苏师范大学、贝尔格莱德大学与文卡国家核科学研究所">
     <a href="https://www.jsnu.edu.cn/" target="_blank" rel="noreferrer"><img src={asset('jsnu-crest.png')} alt="江苏师范大学校徽"/><span>江苏师范大学<small>Jiangsu Normal University</small></span></a>
     <a href="https://www.bg.ac.rs/" target="_blank" rel="noreferrer"><img src={asset('belgrade-crest.png')} alt="贝尔格莱德大学校徽"/><span>贝尔格莱德大学<small>University of Belgrade</small></span></a>
-    <a className="real-vinca-mark" href="https://vin.bg.ac.rs/en/" target="_blank" rel="noreferrer" title="贝尔格莱德大学文卡国家核科学研究所 · Vinča Institute of Nuclear Sciences"><img src={asset('vinca-mark.png')} alt="文卡国家核科学研究所官方标识"/><span>文卡研究所<small>Vinča Institute of Nuclear Sciences</small></span></a>
+    <a className="real-vinca-mark" href="https://vin.bg.ac.rs/en/" target="_blank" rel="noreferrer" title="贝尔格莱德大学文卡国家核科学研究所 · Vinča Institute of Nuclear Sciences"><img src={asset('vinca-mark.png')} alt="文卡国家核科学研究所官方标识"/><span><b>文卡国家核科学研究所</b><small>Vinča Institute of Nuclear Sciences</small></span></a>
   </div>;
 }
 
