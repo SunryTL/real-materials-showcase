@@ -49,3 +49,12 @@ test('low-support correlations remain hollow and individual plot statistics expo
 test('table selection visibly marks the existing 3D scene without recreating its camera', {skip},async t=>{
  const {page}=await open(t);const cloud=page.getByRole('img',{name:'可旋转三维材料点云'});await cloud.waitFor();const before=await cloud.evaluate(canvas=>{canvas.dataset.sceneIdentity='preserved';return canvas.toDataURL();});await page.locator('.science-records > summary').click();await page.getByRole('button',{name:'查看样品 REAL-1'}).click();await page.waitForFunction(previous=>document.querySelector('.science-webgl canvas')?.toDataURL()!==previous,before);assert.equal(await cloud.getAttribute('data-scene-identity'),'preserved');
 });
+test('evidence galaxy is the default 3D view and PCA remains available', {skip},async t=>{
+ const {page}=await open(t);const cloud=page.getByRole('img',{name:'可旋转三维材料点云'});await cloud.waitFor();
+ assert.equal(await cloud.getAttribute('data-scene-mode'),'galaxy');
+ assert.equal(await cloud.getAttribute('data-sample-nodes'),'1');
+ assert.equal(await cloud.getAttribute('data-doi-nodes'),'1');
+ await page.getByRole('button',{name:'PCA化学空间'}).click();
+ await page.waitForFunction(()=>document.querySelector('.science-webgl canvas')?.dataset.sceneMode==='pca');
+ assert.equal(await page.getByRole('img',{name:'可旋转三维材料点云'}).getAttribute('data-sample-nodes'),'1');
+});

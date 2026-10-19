@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import csv
+import hashlib
+import io
 import json
 import re
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import yaml
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, PatternFill
 
 
@@ -131,3 +134,81 @@ def read_package(package: Path) -> dict[str, Any]:
         with (package / "tables" / f"{name}.csv").open("r", encoding="utf-8-sig", newline="") as stream:
             tables[name] = list(csv.DictReader(stream))
     return {"metadata": metadata, "tables": tables}
+
+
+def import_candidate_bundle(
+    *, output_root: Path, schema_path: Path, filename: str, data: bytes
+) -> dict[str, Any]:
+    """Stage a seven-table workbook/zip without touching the authority database."""
+    suffix = Path(filename).suffix.lower()
+    if suffix not in {".xlsx", ".zip"}:
+        raise ValueError("只接受七表XLSX或包含七张CSV的ZIP")
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))["tables"]
+    present: set[str] = set()
+    headers: dict[str, list[str]] = {}
+    row_counts: dict[str, int] = {}
+    parsed_rows: dict[str, list[dict[str, Any]]] = {}
+    if suffix == ".xlsx":
+        workbook = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+        present = set(workbook.sheetnames)
+        for name in SEVEN_TABLE_NAMES:
+            if name not in present:
+                continue
+            rows = workbook[name].iter_rows(values_only=True)
+            first = next(rows, ())
+            headers[name] = [str(value).strip() for value in first if value is not None]
+            parsed_rows[name] = [dict(zip(headers[name], row)) for row in rows if any(value not in (None, "") for value in row)]
+            row_counts[name] = len(parsed_rows[name])
+        workbook.close()
+    else:
+        try:
+            archive = zipfile.ZipFile(io.BytesIO(data))
+        except zipfile.BadZipFile as error:
+            raise ValueError("ZIP文件损坏或格式不正确") from error
+        names = {Path(name).name: name for name in archive.namelist() if not name.endswith("/")}
+        for table in SEVEN_TABLE_NAMES:
+            member = names.get(f"{table}.csv")
+            if not member:
+                continue
+            present.add(table)
+            text = archive.read(member).decode("utf-8-sig")
+            reader = csv.DictReader(io.StringIO(text))
+            parsed_rows[table] = list(reader)
+            headers[table] = [value.strip() for value in (reader.fieldnames or [])]
+            row_counts[table] = len(parsed_rows[table])
+        archive.close()
+    missing_tables = sorted(set(SEVEN_TABLE_NAMES) - present)
+    if missing_tables:
+        raise ValueError(f"候选包缺少七表：{', '.join(missing_tables)}")
+    missing_columns = {
+        name: [column for column in schema[name] if column not in headers.get(name, [])]
+        for name in SEVEN_TABLE_NAMES
+    }
+    digest = hashlib.sha256(data).hexdigest()
+    target = output_root / "imports" / digest[:16]
+    target.mkdir(parents=True, exist_ok=True)
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", Path(filename).name)
+    (target / safe_name).write_bytes(data)
+    for table in SEVEN_TABLE_NAMES:
+        _write_csv(target / "tables" / f"{table}.csv", schema[table], parsed_rows.get(table, []))
+    metadata = {
+        "schema_version": "1.0", "status": "candidate_ready", "source": "codex_import",
+        "import_sha256": digest, "authority_boundary": "candidate_only_never_overwrite_authority",
+    }
+    (target / "package.yaml").write_text(yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False), encoding="utf-8")
+    (target / "admission_review.md").write_text("# 人工准入审核\n\n- [ ] 核心候选\n- [ ] 辅助数据\n- [ ] 排除\n- [ ] 待补证据\n", encoding="utf-8")
+    (target / "validation_report.json").write_text(json.dumps({"valid": False, "status": "pending_human_review", "missing_columns": missing_columns}, ensure_ascii=False, indent=2), encoding="utf-8")
+    manifest = {
+        "status": "candidate_imported",
+        "authority_boundary": "candidate_only_never_overwrite_authority",
+        "sha256": digest,
+        "filename": safe_name,
+        "tables": list(SEVEN_TABLE_NAMES),
+        "row_counts": row_counts,
+        "missing_columns": missing_columns,
+        "package_path": target.relative_to(output_root).as_posix(),
+    }
+    (target / "import_manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    return manifest

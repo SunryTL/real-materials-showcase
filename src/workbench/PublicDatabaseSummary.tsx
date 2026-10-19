@@ -1,16 +1,7 @@
 import { useEffect, useState } from 'react';
 import './scientific-explorer.css';
 
-type Summary = {
-  version: string;
-  options: { families: string[]; material_forms: string[] };
-  summary: { samples: number; doi: number; families: number };
-  aggregates: {
-    family_counts: { family: string; count: number }[];
-    emission_histogram: { lower_nm: number; upper_nm: number; count: number }[];
-    field_coverage: { available: number; possible: number };
-  };
-};
+import type { Summary } from './public-summary-data';
 
 export function PublicDatabaseSummary() {
   const [family, setFamily] = useState('');
@@ -52,7 +43,7 @@ export function PublicDatabaseSummary() {
     </div>
     {error ? <div className="science-state" role="alert"><p>{error}</p><button onClick={() => { reset(); setRevision(value => value + 1); }}>重新读取</button></div> : !data ? <p role="status">正在读取汇总统计…</p> : <>
       <div className="science-scope" role="status"><span>{data.summary.samples} 个样品 · {data.summary.doi} 个 DOI · {data.summary.families} 个家族</span><span>{data.version}</span></div>
-      <h3>发射波长分布</h3><p>每条柱表示一个 10 nm 区间，柱高表示记录数。</p>
+      <h3>发射波长分布</h3><p>每条柱表示一个 10 nm 区间，柱高表示记录数。窄屏可左右滑动图表。</p>
       {bins.length ? <div className="science-table-scroll" tabIndex={0} aria-label="发射分布图，可横向滚动"><svg role="img" aria-label="发射波长分布" viewBox="0 0 800 280" style={{ width: '100%', minWidth: 600, maxHeight: 340 }}>
         <line x1="45" y1="230" x2="780" y2="230" stroke="currentColor" />
         {bins.map((bin, index) => {
@@ -62,7 +53,7 @@ export function PublicDatabaseSummary() {
           return <g key={bin.lower_nm}><rect x={left} y={230 - height} width={Math.max(1, width - 3)} height={height} fill="#457b8d"><title>{bin.lower_nm}–{bin.upper_nm} nm：{bin.count} 条</title></rect><text x={left + width / 2} y={223 - height} textAnchor="middle" fontSize="13">{bin.count}</text>{(index % Math.max(1, Math.ceil(bins.length / 10)) === 0) && <text x={left + width / 2} y="250" textAnchor="middle" fontSize="13">{bin.lower_nm}</text>}</g>;
         })}<text x="410" y="277" textAnchor="middle" fontSize="14">发射峰区间下限 / nm</text>
       </svg></div> : <p>当前范围没有合格的发射峰统计。</p>}
-      <h3>家族覆盖</h3><div className="science-table-scroll"><table><thead><tr><th>材料家族</th><th>记录数</th></tr></thead><tbody>{data.aggregates.family_counts.map(row => <tr key={row.family}><td>{row.family}</td><td>{row.count}</td></tr>)}</tbody></table></div>
+      <h3>家族覆盖</h3><p>表格可上下滚动，查看全部家族。</p><div className="science-table-scroll" tabIndex={0} aria-label="家族覆盖，可上下滚动"><table><thead><tr><th>材料家族</th><th>记录数</th></tr></thead><tbody>{data.aggregates.family_counts.map(row => <tr key={row.family}><td>{row.family}</td><td>{row.count}</td></tr>)}</tbody></table></div>
       <p className="science-note">已填写字段 {data.aggregates.field_coverage.available} / {data.aggregates.field_coverage.possible}。字段完整度用于描述数据覆盖，不代表测量精度或模型准确率。</p>
     </>}
   </section>;

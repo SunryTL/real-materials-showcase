@@ -23,7 +23,7 @@ test('GitHub Pages mode is read-only, backend-free and renders the audited explo
   t.after(() => page.close());
   const apiRequests = [];
   page.on('request', request => { if (request.url().includes('/api/v1/')) apiRequests.push(request.url()); });
-  await page.goto(`${origin}/real-materials-showcase/workbench?mode=public#database`);
+  await page.goto(`${origin}/real-materials-showcase/#database`);
   await page.getByRole('heading', { name: '数据库状态' }).waitFor();
   await page.getByRole('img', { name: '发射波长分布' }).waitFor();
   await page.getByLabel('材料家族', { exact: true }).selectOption('YAG');
@@ -32,8 +32,8 @@ test('GitHub Pages mode is read-only, backend-free and renders the audited explo
   assert.equal(await page.getByText(/当前范围样品表/).count(), 0);
   assert.equal(apiRequests.length, 0);
   assert.equal(await page.locator('input[type=file]').count(), 0);
-  await page.getByRole('button', { name: '文献处理' }).click();
-  await page.getByText('交给 Codex 整理', { exact: true }).waitFor();
+  await page.getByRole('button', { name: '数据录入' }).click();
+  await page.getByRole('button', { name: '复制Codex任务' }).waitFor();
   assert.equal(await page.getByText('启动AI蒸馏', { exact: true }).count(), 0);
 });
 
