@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, BookOpenCheck, Copy, ExternalLink, FileSearch, LayoutDashboard, Menu } from 'lucide-react';
-import { ScientificExplorer } from './ScientificExplorer';
+import { PublicDatabaseSummary } from './PublicDatabaseSummary';
 
 type Page = 'dashboard' | 'inbox' | 'database';
 const TASK = `请读取 real-materials-research 根 README.md、STATUS.md、DECISIONS.md、research/README.md 和 WORKFLOW.md。处理我上传的论文：核对 DOI、题目、版本与 SHA-256，按七表 Schema 生成候选数据和逐字段证据；检查 PL/PLE、单位、样品重复与分组。不要覆盖权威 Excel 或正式快照，完成后给出核心／辅助／排除／待补证据建议，等待我确认。`;
@@ -32,7 +32,7 @@ export default function PublicWorkbenchApp() {
       <div className="wb-content">
         {page === 'dashboard' && <section className="wb-public-home"><p className="wb-overline">AUDITED RESEARCH DATA</p><h2>文献在 Codex 中整理，正式版本在 GitHub 中追溯，科研图在 REAL 中交互。</h2><div className="wb-public-flow">{['本地PDF', 'Codex七表候选', '负责人审核', 'GitHub脱敏快照', 'REAL科研图'].map((item, i) => <div key={item}><small>0{i + 1}</small><b>{item}</b></div>)}</div><button className="wb-button primary" onClick={() => setPage('database')}>查看数据库状态</button></section>}
         {page === 'inbox' && <section className="wb-panel wb-codex-handoff"><p className="wb-overline">CODEX HANDOFF</p><h2>交给 Codex 整理</h2><p>公开网页不上传论文，也不调用网页API。请在本项目的 Codex 科研任务中上传PDF或指定本地文件；Codex会按科研主库规则形成候选包，只有你确认后才发布。</p><ol><li>在 Codex 中上传PDF或提供本地路径</li><li>粘贴下方固定任务模板</li><li>审核七表候选与逐字段证据</li><li>确认后由 Codex 更新脱敏快照、PR与REAL图表</li></ol><pre>{TASK}</pre><button className="wb-button primary" onClick={async () => { await navigator.clipboard.writeText(TASK); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }}><Copy size={16}/>{copied ? '已复制' : '复制固定任务模板'}</button></section>}
-        {page === 'database' && <ScientificExplorer publicMode />}
+        {page === 'database' && <PublicDatabaseSummary />}
       </div>
     </main>
   </div>;
