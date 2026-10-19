@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import subprocess
 from datetime import datetime, timezone
@@ -13,6 +14,10 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .config import Settings
+from .model_review import build_review
+from .training_influence import attach_influence
+from .review_decisions import read_decisions, save_decision, candidate_package
+from .model_runs import ModelRuns, PARAMETERS
 from .database import connect, init_database
 from .documents import (
     doi_candidates_from_bytes,
@@ -518,6 +523,93 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             cursor = connection.execute("INSERT INTO package_reviews(job_id,reviewer_id,decision,notes,created_at,reviewed_package_sha256) VALUES(?,?,?,?,?,?)", (job_id, user["id"], payload.decision, payload.notes, utc_now(),reviewed_hash))
             _audit(connection, user["id"], "review_candidate", "job", job_id, after={"decision": payload.decision, "notes": payload.notes})
         return {"review_id": cursor.lastrowid, "decision": payload.decision, "authority_database_changed": False}
+
+    def model_run_manager():
+        repository=os.environ.get('REAL_MODEL_RESEARCH_ROOT')
+        python=os.environ.get('REAL_MODEL_PYTHON')
+        if not repository or not python:
+            return None
+        if not hasattr(app.state,'model_runs'):
+            app.state.model_runs=ModelRuns(settings.runtime_root/'model_runs',repository,python)
+        return app.state.model_runs
+
+    @app.get('/api/v1/database/model-runs')
+    def list_model_runs(user: dict[str, Any] = Depends(current_user)):
+        manager=model_run_manager()
+        return {'configured':manager is not None,'parameters':PARAMETERS,
+                'runs':manager.list() if manager else []}
+
+    @app.post('/api/v1/database/model-runs')
+    def start_model_run(payload: dict[str, Any],user: dict[str, Any] = Depends(current_user)):
+        if user['role']!='owner':
+            raise HTTPException(403,'只有负责人可以启动训练')
+        manager=model_run_manager()
+        if manager is None:
+            raise HTTPException(503,'请配置本地研究库与训练Python环境')
+        try:
+            candidate=None
+            if 'candidate_decision_ids' in payload:
+                current=get_model_review(user)
+                candidate=candidate_package(settings.runtime_root,payload['candidate_decision_ids'],current['provenance'])
+            return manager.start(payload.get('parameters',{}),candidate=candidate)
+        except ValueError as error:
+            raise HTTPException(422,str(error)) from error
+        except OSError as error:
+            raise HTTPException(503,'训练启动失败，请检查本地环境和运行日志') from error
+
+    @app.get('/api/v1/database/model-runs/{identifier}')
+    def get_model_run(identifier: str,user: dict[str, Any] = Depends(current_user)):
+        manager=model_run_manager()
+        if manager is None:
+            raise HTTPException(503,'本地训练未配置')
+        try:
+            return manager.status(identifier)
+        except ValueError as error:
+            raise HTTPException(422,str(error)) from error
+        except FileNotFoundError as error:
+            raise HTTPException(404,'运行记录不存在') from error
+
+    @app.get("/api/v1/database/model-review")
+    def get_model_review(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+        del user
+        configured = os.environ.get("REAL_MODEL_REVIEW_ROOT")
+        if not configured:
+            raise HTTPException(503, "尚未配置本地模型审核数据，请设置REAL_MODEL_REVIEW_ROOT")
+        root = Path(configured).expanduser().resolve()
+        try:
+            result = build_review(root / "local89_scope_v1/core89_samples.csv",
+                                  root / "current_observation_connection_v1/predictions.csv")
+            attach_influence(result, root / "sample_training_influence_v1")
+            result['decisions'] = read_decisions(settings.runtime_root)
+            return result
+        except OSError as error:
+            raise HTTPException(503, "本地审核文件不可读取，请检查数据配置") from error
+        except (ValueError, KeyError) as error:
+            raise HTTPException(422, "审核数据校验失败：样品范围、字段或预测记录不一致") from error
+
+    @app.post("/api/v1/database/model-review/decisions")
+    def record_model_decision(payload: dict[str, Any], user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+        current = get_model_review(user)
+        if payload.get('provenance') != current['provenance']:
+            raise HTTPException(409, '数据版本已变化，请重新读取后审核')
+        if any(not isinstance(payload.get(key), str) for key in ('sample_id', 'decision', 'reason')):
+            raise HTTPException(422, '请填写样品、决定和理由')
+        try:
+            record = save_decision(settings.runtime_root, payload['sample_id'], payload['decision'],
+                                   payload['reason'], current['provenance'], user['id'],
+                                   {row['sample_id'] for row in current['samples']},
+                                   correction=payload.get('correction'))
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
+        return {'record': record, 'authority_database_changed': False}
+
+    @app.post('/api/v1/database/model-review/candidate')
+    def export_model_candidate(payload: dict[str, Any], user: dict[str, Any] = Depends(current_user)):
+        current=get_model_review(user)
+        try:
+            return candidate_package(settings.runtime_root,payload.get('decision_ids'),current['provenance'])
+        except ValueError as error:
+            raise HTTPException(422,str(error)) from error
 
     @app.get("/api/v1/database/health")
     def get_database_health(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
