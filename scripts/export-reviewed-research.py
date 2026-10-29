@@ -63,8 +63,8 @@ scopes={}
 for family in ['',*families]:
  for form in ['', 'ceramic']:
   key=f'formal|{family}|{form}';name=hashlib.sha256(key.encode()).hexdigest()[:16]+'.json';scopes[key]='explorer/'+name;write(ROOT/'releases'/VERSION/'explorer'/name,make(family,form))
-write(ROOT/'releases'/VERSION/'manifest.json',dict(database_version=VERSION,scopes=scopes,source_hash=sha(SRC/'samples92_reviewed.csv'),mode='public-read-only',description='论文核验训练子集：92条PL，30组PL/PLE；与完整文献库分别保留。PCA采用组成和半径描述符标准化投影。'))
-write(ROOT/'versions.json',dict(versions=[dict(version='v1.3_20260725',label='完整文献库 · v1.3_20260725'),dict(version=VERSION,label='论文核验子集 · PL92 / 配对30 · 2026-10-26')]))
+write(ROOT/'releases'/VERSION/'manifest.json',dict(database_version=VERSION,scopes=scopes,source_hash=sha(SRC/'samples92_reviewed.csv'),mode='public-read-only',description='模型核验训练子集：92条PL，30组PL/PLE；与完整文献库分别保留。PCA采用组成和半径描述符标准化投影。'))
+write(ROOT/'versions.json',dict(versions=[dict(version='v1.3_20260725',label='完整文献库 · v1.3_20260725'),dict(version=VERSION,label='模型核验子集 · PL92 / 配对30 · 2026-10-26')]))
 summary=pd.read_csv(SRC/'summary.csv'); pred=pd.read_csv(SRC/'predictions.csv');gp=pred[pred.route=='joint_gpr']
 assert len(gp)==276 and gp.groupby('seed').sample_id.nunique().eq(92).all()
 # Recalculate each repeat's OOF metrics, then average; repetitions are not new samples.
@@ -73,6 +73,21 @@ for route,g in pred.groupby('route'):
  s=summary[(summary.route==route)&(summary.task=='emission')].iloc[0]
  vals=[(r2_score(x.actual_nm,x.predicted_nm),mean_absolute_error(x.actual_nm,x.predicted_nm),mean_squared_error(x.actual_nm,x.predicted_nm)**.5) for _,x in g.groupby('seed')]
  assert np.allclose(np.mean(vals,axis=0),[s.r2,s.mae,s.rmse],rtol=1e-9)
-names={'joint_gpr':'Gaussian process','joint_svr':'Support vector regression','joint_extra_trees':'Extra Trees','joint_ridge':'Ridge','joint_xgboost':'XGBoost','joint_random_forest':'Random forest','joint_inner_selected':'内层算法选择'}
-write(ROOT/'research-20261029.json',dict(version='reviewed92_hierarchy_algorithms_20261029_v1',date='2026-10-29',database_version=VERSION,n=92,paired=30,seeds=sorted(gp.seed.unique().tolist()),metrics=[dict(route=r.route,name=names[r.route],mae=r.mae,mae_sd=r.mae_sd,rmse=r.rmse,r2=r.r2,r2_sd=r.r2_sd) for _,r in summary[summary.task=='emission'].sort_values('mae').iterrows()],records=records,predictions=[dict(sample_id=r.sample_id,seed=int(r.seed),fold=int(r.fold),actual_nm=r.actual_nm,predicted_nm=r.predicted_nm) for _,r in gp.iterrows()],source_hashes={f:sha(SRC/f) for f in ['samples92_reviewed.csv','predictions.csv','summary.csv','splits.json']},validation='3次重复×5折组成分组嵌套交叉验证；指标为每次完整折外预测的均值。'))
-print('Exported reviewed explorer and independently checked OOF metrics. Historical release untouched.')
+names={'joint_gpr':'联合高斯过程 GP','joint_svr':'支持向量回归 SVR','joint_extra_trees':'极端随机树 Extra Trees','joint_ridge':'岭回归 Ridge','joint_xgboost':'梯度提升 XGBoost','joint_random_forest':'随机森林 Random Forest'}
+conditions=['sample_thickness_mm','sintering_temperature_c','sintering_time_h','annealing_temperature_c','annealing_time_h']
+for record,(_,r) in zip(records,df.iterrows()):
+ record['conditions']={key:(None if r[key] is None or float(r[key+'_missing'])==1 else float(r[key])) for key in conditions}
+ record['excitation_observed_ev']=None if r.excitation_5d1_ev is None else float(r.excitation_5d1_ev)
+metrics=[]
+for _,r in summary[(summary.task=='emission') & summary.route.isin(names)].sort_values('mae').iterrows():
+ repeats=pred[pred.route==r.route].groupby('seed')
+ rmses=[mean_squared_error(g.actual_nm,g.predicted_nm)**.5 for _,g in repeats]
+ metrics.append(dict(route=r.route,name=names[r.route],mae=r.mae,mae_sd=r.mae_sd,rmse=r.rmse,rmse_sd=float(np.std(rmses,ddof=1)),r2=r.r2,r2_sd=r.r2_sd))
+public_predictions=[]
+for _,r in pred[pred.route.isin(names)].iterrows():
+ assert abs(r.predicted_excitation_ev-r.latent_loss_ev+r.correction_ev-r.predicted_emission_ev)<1e-10
+ assert abs(1239.841984/r.predicted_emission_ev-r.predicted_nm)<1e-8
+ public_predictions.append(dict(route=r.route,sample_id=r.sample_id,seed=int(r.seed),fold=int(r.fold),actual_nm=r.actual_nm,predicted_nm=r.predicted_nm,excitation_ev=r.predicted_excitation_ev,latent_loss_ev=r.latent_loss_ev,correction_ev=r.correction_ev,emission_ev=r.predicted_emission_ev,net_loss_ev=r.predicted_loss_ev))
+assert len(public_predictions)==1656
+write(ROOT/'research-20261029.json',dict(schema_version=2,version='reviewed92_hierarchy_algorithms_20261029_v1',date='2026-10-29',database_version=VERSION,n=92,paired=30,seeds=sorted(gp.seed.unique().tolist()),metrics=metrics,records=records,predictions=public_predictions,source_hashes={f:sha(SRC/f) for f in ['samples92_reviewed.csv','predictions.csv','summary.csv','splits.json']},validation='3次重复×5折组成分组嵌套交叉验证；指标为每次完整折外预测的均值。'))
+print('Exported six algorithms, recorded conditions and checked physical decomposition. No fitting performed.')

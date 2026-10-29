@@ -9,3 +9,7 @@ The existing 255-record public release and evidence-galaxy-v1 renderer are uncha
 - Public data: selected sample ID, DOI, formula, family, emission, coverage and derived PCA coordinates. No private workbook, PDF, raw feature vector, fitted estimator, or local path is included.
 - PCA: nine composition/site/radius descriptors, standardized on this exploratory dataset; this visualization is separate from prediction training. No missing descriptor imputation.
 - Rebuild with `scripts/export-reviewed-research.py SOURCE_EXPERIMENT_DIRECTORY` using numpy/pandas/scipy/sklearn. Source hashes are stored in the result JSON and release manifest.
+
+## Independent model browser
+
+The `#models` route browses six saved algorithms, three repeats and 92 samples (1656 unique OOF records). Schema 2 adds measured process conditions (missing flags honored), prediction route and u/v/c components. Conditions are read-only evidence; switching samples browses completed results. No estimator is executed or refitted in the browser. Each route’s branch energy identity and wavelength conversion are checked at export and in tests. Prediction filters scope both sample choices and the result plot; the performance tab retains all 92 samples for like-for-like algorithm evaluation. RMSE SD is computed over the same three OOF repeats.

@@ -19,14 +19,3 @@ test('reviewed version retains sample selection and the full library stays avail
  await p.getByRole('button',{name:'关闭样品详情'}).click();await select.selectOption('latest');await p.getByText(/255 个样品 · 42 个 DOI/).waitFor();
  }finally{await p.close();}
 });
-test('latest model points open measured sample evidence and display grouped results',{skip},async()=>{
- const p=await browser.newPage();try{
- await p.goto(origin+'#database');await p.getByText(/255 个样品/).first().waitFor();
- assert.ok(await p.getByRole('tab',{name:'模型与论文'}).count(),'research results tab must exist');
- await p.getByRole('tab',{name:'模型与论文'}).click();await p.getByText('0.8405',{exact:true}).first().waitFor();
- assert.equal(await p.locator('.research-parity [role="button"]').count(),92);
- await p.locator('.research-parity [role="button"]').first().click();
- assert.ok(await p.locator('.research-sample a[href^="https://doi.org/"]').count());
- assert.ok(await p.locator('.research-equations').textContent().then(t=>t.includes('u − v + c')));
- }finally{await p.close();}
-});

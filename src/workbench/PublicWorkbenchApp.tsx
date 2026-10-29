@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { Copy, Menu, ShieldCheck, UploadCloud, X } from 'lucide-react';
 import InstitutionalHome, { UniversityMarks, ResearchFooter } from './InstitutionalHome';
 import './institutional.css';
+import { ModelBrowser } from './ModelBrowser';
 import { ScientificExplorer } from './ScientificExplorer';
 import { fetchExplorer, type ExplorerData } from './explorer-data';
 
-type Page = 'home' | 'intake' | 'literature' | 'database';
+type Page = 'home' | 'intake' | 'literature' | 'database' | 'models';
 type Priority = {
   doi: string; title: string; target_routes: string; priority: number;
   status: string; next_action: string;
@@ -71,7 +72,7 @@ function readRoute(): Route {
   const raw = window.location.hash.slice(1);
   if (raw === 'dashboard') return 'home';
   if (raw === 'inbox') return 'intake';
-  return ['home','cooperation','database','literature','intake'].includes(raw) ? raw as Route : 'home';
+  return ['home','cooperation','database','models','literature','intake'].includes(raw) ? raw as Route : 'home';
 }
 export default function PublicWorkbenchApp() {
   const [route, setRoute] = useState<Route>(readRoute);
@@ -93,7 +94,7 @@ export default function PublicWorkbenchApp() {
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
   }, []);
-  const nav: [Route, string][] = [['home','首页'],['cooperation','合作研究'],['database','数据库'],['literature','文献整理'],['intake','数据录入']];
+  const nav: [Route, string][] = [['home','首页'],['cooperation','合作研究'],['database','数据库'],['models','机器学习模型'],['literature','文献整理'],['intake','数据录入']];
   const go = (next: Route) => { window.location.assign(`#${next}`); setMobile(false); if (next === route && next === 'cooperation') scrollToCooperation(); };
   const copyTask = async () => { await navigator.clipboard.writeText(TASK); setCopied(true); window.setTimeout(() => setCopied(false), 1800); };
   return <div className="wb-shell real-public-site">
@@ -104,12 +105,13 @@ export default function PublicWorkbenchApp() {
       <nav id="real-navigation" className={mobile ? 'is-open' : ''} aria-label="主导航"><a className="real-nav-brand" href="#home">REAL</a>{nav.map(([id,label])=><button key={id} aria-current={route === id ? 'page' : undefined} onClick={() => go(id)}>{label}</button>)}</nav>
     </div></header>
     <main id="main-content" className="real-main" tabIndex={-1}>
-      {page !== 'home' && <header className="real-tool-heading"><div><h1>{({database:'数据库状态',literature:'文献整理',intake:'数据录入'})[page]}</h1><p>REAL科研平台 · 可追溯的研究证据</p></div><div><span>数据库版本</span><b>{data?.version || '载入中'}</b><span>绘图规范：master-v2-individual</span></div></header>}
+      {page !== 'home' && page !== 'models' && <header className="real-tool-heading"><div><h1>{({database:'数据库状态',models:'机器学习模型',literature:'文献整理',intake:'数据录入'})[page]}</h1><p>REAL科研平台 · 可追溯的研究证据</p></div><div><span>数据库版本</span><b>{data?.version || '载入中'}</b><span>绘图规范：master-v2-individual</span></div></header>}
       <div className={page === 'home' ? 'real-home-content' : 'wb-content real-tool-content'}>
         {error && <p className="portal-data-error">{error}。数据库主页面仍可单独重试。</p>}
         {page === 'home' && <InstitutionalHome data={data}/>}
         {page === 'intake' && <IntakePage data={data} copied={copied} copyTask={copyTask}/>}
         {page === 'literature' && <LiteraturePage data={data} priorities={priorities}/>}
+        {page === 'models' && <ModelBrowser/>}
         {page === 'database' && <ScientificExplorer publicMode/>}
       </div>
     </main>
