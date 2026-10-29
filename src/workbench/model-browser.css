@@ -103,3 +103,34 @@
 .model-state p { margin-block:16px; }
 @media(max-width:1100px) { .model-workspace { grid-template-columns:minmax(220px,280px) minmax(0,1fr); gap:25px; } .model-inputs { padding:18px; } .model-result-line strong { font-size:23px; } .model-result-line .model-primary-result strong { font-size:34px; } .model-energy-values strong { font-size:19px; } .model-energy-values button { padding-inline:8px; } .model-score-row strong { font-size:27px; } .model-score-row small { display:block; } }
 @media(max-width:750px) { .model-browser { padding:20px 18px 30px; } .model-intro { display:block; } .model-intro h1,.model-intro h2 { font-size:27px; } .model-version { display:block; text-align:left; margin-top:14px; } .model-controls { flex-wrap:wrap; gap:16px; } .model-controls label,.model-controls label:first-child { flex:1; min-width:200px; width:auto; } .model-controls p { margin-left:0; } .model-workspace { grid-template-columns:1fr; } .model-inputs { padding:22px; } .model-output>header { flex-wrap:wrap; } .model-result-line { grid-template-columns:1.3fr 1fr 1fr; gap:10px; } .model-result-line strong { font-size:23px; } .model-result-line .model-primary-result strong { font-size:33px; } .model-result-line span { font-size:12px; } .model-energy-values { grid-template-columns:1fr; } .model-energy-values button { display:grid; grid-template-columns:1.3fr 1fr; align-items:center; padding:14px 8px; } .model-energy-values button>span:last-child { grid-column:1 / -1; margin-top:5px; } .model-energy-values button+button { border-left:0; border-top:1px solid #dfe7eb; } .model-energy-values strong { margin:0; text-align:right; font-size:23px; } .model-parity-layout { grid-template-columns:1fr; gap:12px; } .model-plot-selection { margin-top:0; } .model-performance-header { display:block; } .model-score-row { gap:15px; } .model-score-row strong { font-size:24px; } .model-score-row small { font-size:12px; } .model-progress dl { grid-template-columns:1fr; } .model-method-flow { flex-direction:column; gap:18px; } .model-method-flow>div { padding:0; } .model-method-flow svg { transform:rotate(90deg); } .model-branches button { font-size:13px; padding:14px 8px; } .model-branch-detail { padding:20px; } .model-branch-detail dl>div { grid-template-columns:1fr; gap:5px; } .model-browser .model-equation { font-size:23px; } }
+/* Prediction quality leads; the selected material's energy evolution follows. */
+.model-prediction-scores { padding:20px 0 18px; }
+.model-prediction-scores strong { font-size:25px; }
+.model-prediction-scores small { display:block; font-size:12px; }
+.model-parity-compact { margin-top:22px; padding-top:24px; }
+.model-parity-compact .model-parity-layout { display:block; }
+.model-parity-compact .model-parity { max-height:550px; margin:auto; }
+.model-energy-section { margin-top:40px; border-top:1px solid #dfe7eb; padding-top:10px; }
+.model-energy-section .model-energy-header { align-items:flex-start; }
+.model-energy-header .model-energy-context { font-family:inherit; font-size:13px; color:#536977; margin-top:7px; }
+.model-energy-figure { margin:24px 0; }
+.model-energy-legend { display:flex; align-items:center; flex-wrap:wrap; gap:12px 26px; font-size:13px; color:#405b6a; }
+.model-energy-legend span { display:inline-flex; align-items:center; gap:8px; }
+.model-energy-legend i { width:22px; height:3px; display:inline-block; }
+.model-energy-legend small { margin-left:auto; font-size:12px; color:#536977; }
+.model-energy-scroll { overflow-x:auto; margin-top:18px; }
+.model-energy-section .model-contributions { width:100%; max-width:1120px; margin:0 auto; font-size:16px; }
+.model-contributions .energy-axis-title { font-size:15px; fill:#536977; }
+.model-contributions .energy-tick { font-size:15px; fill:#627b89; }
+.model-contributions .energy-level-number { font-size:23px; font-weight:600; font-variant-numeric:tabular-nums; }
+.model-contributions .energy-change-number { font-size:17px; font-weight:600; font-variant-numeric:tabular-nums; }
+.model-contributions .energy-change-symbol { font-family:'Times New Roman',serif; font-size:19px; font-style:italic; }
+.model-contributions .energy-stage { font-size:16px; fill:#345668; }
+.model-contributions .energy-level { cursor:pointer; }
+.model-contributions .energy-level:hover .energy-level-hit,.model-contributions .energy-level:focus .energy-level-hit { fill:#eef4f7; }
+.model-contributions .energy-level:focus { outline:none; }
+.model-contributions .energy-level:focus .energy-level-hit { stroke:#216a75; stroke-width:1.5; }
+.model-energy-figure figcaption { font-size:13px; line-height:1.8; color:#536977; padding-top:14px; max-width:90ch; }
+@media(max-width:750px) { .model-prediction-scores { gap:12px; } .model-prediction-scores strong { font-size:23px; } .model-energy-header { flex-wrap:wrap; } .model-energy-legend { gap:10px 18px; } .model-energy-legend small { margin-left:0; flex-basis:100%; } .model-energy-section .model-contributions { min-width:640px; } .model-energy-figure figcaption { font-size:12px; } }
+.energy-mobile-hint { display:none; }
+@media(max-width:750px) { .energy-mobile-hint { display:block; margin-top:6px; color:#216a75; } }

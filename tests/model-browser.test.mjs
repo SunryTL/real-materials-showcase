@@ -18,6 +18,7 @@ test('independent model page links recorded inputs to six algorithms and physica
  const p=await browser.newPage({viewport:{width:1440,height:1000}});t.after(()=>p.close());await p.goto(origin+'#models');
  await p.getByRole('heading',{name:'机器学习模型',exact:true}).waitFor();
  await p.getByLabel('具体样品',{exact:true}).waitFor();
+ assert.equal(await p.locator('.model-parity-figure').evaluate(el => { const energy=document.querySelector('.model-energy-section'); return !!energy && !!(el.compareDocumentPosition(energy) & Node.DOCUMENT_POSITION_FOLLOWING); }),true,'prediction scatter must precede the energy explanation');
  const d=artifact();const r=d.records.find(r=>r.sample_id==='BARTA21_YAG');
  await p.getByLabel('具体样品',{exact:true}).selectOption(r.sample_id);
  assert.ok((await p.locator('.model-input-evidence').innerText()).includes('未记录'));
