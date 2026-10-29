@@ -48,20 +48,27 @@ async function publicManifest() {
 
 export async function fetchExplorer(scope: ExplorerScope, signal: AbortSignal, publicMode = false): Promise<ExplorerData> {
   let response: Response;
+  let versions: string[] | undefined;
   if (publicMode) {
     const { manifest, root } = await publicManifest();
     const version = scope.version === 'latest' ? manifest.database_version : scope.version;
-    if (version !== manifest.database_version || scope.status !== 'formal') throw new Error('公开页面只提供当前正式脱敏快照。');
+    const catalogResponse = await fetch(`${import.meta.env.BASE_URL}workbench/public-data/versions.json`, { signal });
+    const catalog = catalogResponse.ok ? await catalogResponse.json() : { versions: [{ version: manifest.database_version }] };
+    versions = catalog.versions.map((item: { version: string }) => item.version);
+    if (!versions?.includes(version) || scope.status !== 'formal') throw new Error('请选择已发布的公开数据版本。');
+    const selectedRoot = version === manifest.database_version ? root : `${import.meta.env.BASE_URL}workbench/public-data/releases/${version}/`;
+    const selectedManifest = version === manifest.database_version ? manifest : await fetch(`${selectedRoot}manifest.json`, { signal }).then(r => { if (!r.ok) throw new Error('版本清单读取失败'); return r.json() as Promise<PublicManifest>; });
     const key = `formal|${scope.family}|${scope.material_form}`;
-    const relative = manifest.scopes[key];
+    const relative = selectedManifest.scopes[key];
     if (!relative) throw new Error('当前筛选范围没有已发布的正式数据。');
-    response = await fetch(`${root}${relative}`, { signal });
+    response = await fetch(`${selectedRoot}${relative}`, { signal });
   } else {
     response = await fetch(`/api/v1/explorer?${new URLSearchParams(scope)}`, { credentials: 'include', signal });
   }
   const body = await response.json();
   if (!response.ok) throw new Error(body.detail || `数据载入失败 (${response.status})`);
   if (!body.charts || !Array.isArray(body.records)) throw new Error('科研数据响应不完整，请重试或检查后端服务。');
+  if (versions) body.options.versions = versions;
   return body;
 }
 

@@ -34,7 +34,7 @@ export default function InstitutionalHome({ data }: { data: ExplorerData | null 
       ].map(([en,cn,body])=><article key={en}><h3>{en}<span>{cn}</span></h3><p>{body}</p></article>)}</div>
     </section>
     <section className="real-cooperation" id="cooperation"><div className="real-container">
-      <div className="real-section-heading"><h2>两校协同，<br/>拓展材料研究的边界</h2><p>以多体系荧光材料为共同研究方向，汇聚材料探索、机制表征、人工智能与陶瓷创制的研究优势。双方在已有合作基础上推进联合项目申报。</p></div>
+      <div className="real-section-heading"><h2>两校协同，<br/>拓展材料研究的边界</h2><p>以多体系荧光材料为共同研究方向，汇聚材料探索、机制表征、人工智能与陶瓷创制的研究优势。</p></div>
       <div className="real-partners"><article><h3>江苏师范大学</h3><p className="real-institution-en">Jiangsu Normal University</p><p className="real-unit">江苏省先进激光材料与器件重点实验室</p><h4>物理可解释人工智能<br/>与陶瓷定向创制</h4><p>研究关注构效规律提炼与多目标逆向设计，结合陶瓷定向制备、微结构调控及极端功率服役评价，探索材料性能与应用需求的协同优化。</p><p className="real-research-terms">可解释建模 · 逆向设计 · 陶瓷制备 · 服役评价</p></article>
       <article><h3>贝尔格莱德大学</h3><p className="real-institution-en">University of Belgrade</p><p className="real-unit">文卡国家核科学研究所</p><h4>多体系荧光粉探索<br/>与热猝灭机制研究</h4><p>合作研究聚焦多基质荧光材料、局域结构与缺陷能级、能量迁移及热猝灭过程，通过候选材料制备与表征，为构效分析积累多样的材料证据。</p><p className="real-research-terms">粉体探索 · 缺陷表征 · 热猝灭机制 · 实验验证</p></article></div>
       <div className="real-research-chain" aria-label="共同研究方向">{['材料探索','机制解析与智能设计','实验反馈','陶瓷制备与服役评价'].map((s,i)=><div key={s}><span>{s}</span>{i<3&&<ArrowRight aria-hidden="true" size={22}/>}</div>)}</div>

@@ -3,9 +3,10 @@ import { Download, RefreshCw, X } from 'lucide-react';
 import { ScientificCanvas } from './ScientificCanvas';
 import { exportRecords, fetchExplorer, type ExplorerData, type ExplorerScope } from './explorer-data';
 import './scientific-explorer.css';
+import { ResearchResults } from './ResearchResults';
 const ScientificPointCloud = lazy(() => import('./ScientificPointCloud').then(module => ({ default: module.ScientificPointCloud })));
 
-type View = 'content' | 'quality' | 'evidence';
+type View = 'content' | 'quality' | 'evidence' | 'research';
 const statusNames: Record<string, string> = { formal: '正式快照', candidate: '候选预览', all: '混合预览（非正式统计）' };
 export function ScientificExplorer({ owner = false, publicMode = false }: { owner?: boolean; publicMode?: boolean }) {
   const [scope, setScope] = useState<ExplorerScope>({ version: 'latest', family: '', material_form: '', status: 'formal' });
@@ -21,7 +22,7 @@ export function ScientificExplorer({ owner = false, publicMode = false }: { owne
     fetchExplorer(scope, controller.signal, publicMode).then(next => { if (!active) return; setData(next); setOptions(next.options); setLoading(false); }).catch(reason => { if (!active || controller.signal.aborted) return; setError(reason instanceof Error ? reason.message : '数据载入失败'); setLoading(false); });
     return () => { active = false; controller.abort(); };
   }, [scope, revision, publicMode]);
-  function changeScope(key: keyof ExplorerScope, value: string) { setLoading(true); setError(''); setData(null); setSelected(null); setJobIds([]); setConfirmPublish(false); setScope(current => ({ ...current, [key]: value })); }
+  function changeScope(key: keyof ExplorerScope, value: string) { setLoading(true); setError(''); setData(null); setSelected(null); setJobIds([]); setConfirmPublish(false); setScope(current => ({ ...current, ...(key === 'version' ? { family: '', material_form: '' } : {}), [key]: value })); }
   function retry() { setLoading(true); setError(''); setData(null); setRevision(n => n + 1); }
   async function publish() {
     setPublishing(true); setPublishMessage('');
@@ -36,10 +37,11 @@ export function ScientificExplorer({ owner = false, publicMode = false }: { owne
       <label>材料家族<select aria-label="材料家族" value={scope.family} onChange={e => changeScope('family', e.target.value)}><option value="">全部家族</option>{options.families.map(v => <option key={v} value={v}>{v}</option>)}</select></label>
       <label>材料形态<select value={scope.material_form} onChange={e => changeScope('material_form', e.target.value)}><option value="">全部形态</option>{options.material_forms.map(v => <option key={v} value={v}>{v}</option>)}</select></label>
       {!publicMode && <label>数据范围<select value={scope.status} onChange={e => changeScope('status', e.target.value)}>{Object.entries(statusNames).map(([key, name]) => <option key={key} value={key}>{name}</option>)}</select></label>}
-      <label className="science-version-select">数据库版本<select value={scope.version} onChange={e => changeScope('version', e.target.value)}><option value="latest">最新版本</option>{options.versions.filter(v => v !== 'latest').map(v => <option key={v} value={v}>{v}</option>)}</select></label>
+      <label className="science-version-select">数据库版本<select value={scope.version} onChange={e => changeScope('version', e.target.value)}><option value="latest">{publicMode ? '完整文献库' : '最新版本'}</option>{options.versions.filter(v => v !== 'latest').map(v => <option key={v} value={v}>{v === 'pl92_20261026_v1' ? '论文核验子集 · PL92 / 配对30 · 2026-10-26' : v}</option>)}</select></label>
       <button className="science-action" disabled={!data || loading} onClick={() => data && exportRecords(data)}><Download size={15} />导出当前样品 CSV</button>
     </div>
     <div className="science-scope" role="status">{loading ? '正在读取当前筛选范围…' : data ? <><strong>{statusNames[data.scope.status] || data.scope.status}</strong><span>{data.summary.samples} 个样品 · {data.summary.doi} 个 DOI · {data.summary.families} 个家族</span><span className="science-version">{data.version}</span></> : '数据未载入'}</div>
+    {data?.version === 'pl92_20261026_v1' && <p className="science-note">论文核验子集：92条发射观测、30组配对光谱。完整文献库单独保留；此处结构覆盖包含按来源标注的结构证据，PCA为组成与半径描述符的投影。</p>}
     {scope.status !== 'formal' && <p className="science-candidate-note">{scope.status === 'all' ? <>混合预览统计，不是正式统计。图中合并展示正式与候选记录，不能作为正式数据库结论。{data?.status_counts && <> 当前正式 {data.status_counts.formal} 条、候选 {data.status_counts.candidate} 条。</>}</> : '候选预览不是正式入库。只有负责人核验后才能发布新快照。'}</p>}
     {owner && scope.status !== 'formal' && data && <section className="science-publish">
       <h3>将已审核候选整包发布为新快照</h3>
@@ -53,11 +55,12 @@ export function ScientificExplorer({ owner = false, publicMode = false }: { owne
       </> : <p>当前范围没有可选择的候选包。</p>}
     </section>}
     {publishMessage && <p role="status" className="science-candidate-note">{publishMessage}</p>}
-    <div className="science-tabs" role="tablist" aria-label="科研问题">{([['content', '数据里有什么'], ['quality', '数据质量如何'], ['evidence', '数据能支持什么']] as const).map(([key, title]) => <button key={key} id={`science-tab-${key}`} role="tab" aria-selected={view === key} aria-controls="science-panel" onClick={() => setView(key)}>{title}</button>)}</div>
+    <div className="science-tabs" role="tablist" aria-label="科研问题">{([['content', '数据里有什么'], ['quality', '数据质量如何'], ['evidence', '数据能支持什么'], ['research', '模型与论文']] as const).map(([key, title]) => <button key={key} id={`science-tab-${key}`} role="tab" aria-selected={view === key} aria-controls="science-panel" onClick={() => setView(key)}>{title}</button>)}</div>
     {error && <div className="science-state" role="alert"><h3>科研数据暂时不可用</h3><p>{error}</p><button className="science-action" onClick={retry}>重试加载</button></div>}
     {loading && <div className="science-state" role="status"><div className="science-loading-line" /><p>正在取得版本化样品与预计算统计，不使用模拟数据填充。</p></div>}
     {!loading && data && <div id="science-panel" role="tabpanel" aria-labelledby={`science-tab-${view}`}>
       {!data.records.length ? <div className="science-state"><h3>当前范围没有样品</h3><p>请更换家族、材料形态或数据范围。</p></div> : <>
+        {view === 'research' && <ResearchResults />}
         {view === 'content' && <>
           <ScientificCanvas kind="emission" title="发射波长分布" description={`按家族查看发射范围与真实观测值 · 当前图 ${data.charts.emission.groups.reduce((sum, group) => sum + group.n, 0)} 条有效记录`} data={data} selected={selected} onSelect={onSelect} />
           <div className="science-legend">{data.charts.emission.groups.map(group => <span key={group.name}><i style={{ backgroundColor: group.color }} />{group.name}<small>n={group.n} · 中位数 {group.median == null ? '—' : Number(group.median.toFixed(1))} nm</small></span>)}</div>
@@ -75,7 +78,7 @@ export function ScientificExplorer({ owner = false, publicMode = false }: { owne
           <ScientificCanvas kind="readiness" title="分层模型字段资格" description="只报告当前版本的字段资格，不把字段齐全解释为模型已验证。" data={data} selected={selected} onSelect={onSelect} />
           <details className="science-method"><summary>按论文查看样品数量</summary><div className="science-paper-list">{data.charts.evidence.papers.map(p => <p key={p.doi}><a href={`https://doi.org/${encodeURI(p.doi)}`} target="_blank" rel="noreferrer">{p.doi || '未确认 DOI'}</a><span>{p.samples} 个样品</span></p>)}</div></details>
         </>}
-        <details className="science-records" open={!!selected}><summary>当前范围样品表 · {data.records.length} 条（也可用键盘选择样品）</summary><div className="science-table-scroll"><table><thead><tr><th>样品</th><th>材料家族</th><th>组成</th><th>PL / nm</th><th>状态</th></tr></thead><tbody>{data.records.map(row => <tr key={row.sample_id} className={selected === row.sample_id ? 'is-selected' : ''}><td><button onClick={() => onSelect(row.sample_id)} aria-label={`查看样品 ${row.sample_id}`}>{row.sample_id}</button></td><td>{row.family}</td><td>{row.formula}</td><td>{row.emission_nm ?? '缺失'}</td><td>{statusNames[row.status] || row.status}</td></tr>)}</tbody></table></div></details>
+        {view !== 'research' && <details className="science-records" open={!!selected}><summary>当前范围样品表 · {data.records.length} 条（也可用键盘选择样品）</summary><div className="science-table-scroll"><table><thead><tr><th>样品</th><th>材料家族</th><th>组成</th><th>PL / nm</th><th>状态</th></tr></thead><tbody>{data.records.map(row => <tr key={row.sample_id} className={selected === row.sample_id ? 'is-selected' : ''}><td><button onClick={() => onSelect(row.sample_id)} aria-label={`查看样品 ${row.sample_id}`}>{row.sample_id}</button></td><td>{row.family}</td><td>{row.formula}</td><td>{row.emission_nm ?? '缺失'}</td><td>{statusNames[row.status] || row.status}</td></tr>)}</tbody></table></div></details>}
         <p className="science-provenance">统计与坐标来自当前{publicMode ? 'GitHub正式脱敏快照' : '后端版本'} · {data.version}{data.source_hash && <> · 源哈希 {data.source_hash.slice(0, 16)}</>}。各图仅使用该图所需字段有效的记录，样品数可能不同。</p>
       </>}
     </div>}

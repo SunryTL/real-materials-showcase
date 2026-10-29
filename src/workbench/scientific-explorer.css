@@ -61,7 +61,7 @@
 .science-records td button { background: none; color: #176b86; border: 0; padding: 5px 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font: inherit; }
 .science-records .is-selected { background: #edf7f7; }
 .science-provenance { margin: 14px 0 0; font-size: 11px; color: #536977; overflow-wrap: anywhere; }
-.science-record-drawer { position: fixed; z-index: 70; right: 0; top: 0; bottom: 0; width: min(410px, 94vw); background: #fff; box-shadow: -10px 8px 40px #16374722; padding: 27px; overflow: auto; }
+.science-record-drawer { position: fixed; z-index: 120; right: 0; top: 0; bottom: 0; width: min(410px, 94vw); background: #fff; box-shadow: -10px 8px 40px #16374722; padding: 27px; overflow: auto; }
 .science-record-drawer header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .science-record-drawer h3 { overflow-wrap: anywhere; }
 .science-record-drawer dl > div { margin: 24px 0; }
