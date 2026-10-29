@@ -35,33 +35,7 @@ scripts/create_workbench_user.sh shidi 师弟 contributor
 
 多人共用同一工作台，每个人使用自己的账号。API费用由本机后端的课题组Key统一承担；Key不会发给成员。
 
-## 当前论文模型的本地审核与调参
-
-模型功能需要显式连接包含当前实验产物的科研工作副本，而不是默认指向旧主库。启动前设置以下三个环境变量；占位路径须替换为实际位置：
-
-```bash
-export REAL_MODEL_RESEARCH_ROOT="/实际位置/科研工作副本"
-export REAL_MODEL_REVIEW_ROOT="$REAL_MODEL_RESEARCH_ROOT/research/models/emission_feature_engineering/within_family_v2/structure_quality_20261014"
-export REAL_MODEL_PYTHON="/实际位置/科研Python环境/bin/python"
-scripts/run_workbench.sh
-```
-
-`REAL_MODEL_RESEARCH_ROOT`必须包含`research/code/interactive_joint_run.py`及其数据依赖。审核目录需要`local89_scope_v1/core89_samples.csv`与`current_observation_connection_v1/predictions.csv`；`sample_training_influence_v1`存在且哈希及数据版本一致时，还会显示训练影响分析。科研Python必须能够运行这份科研代码；工作台服务器环境与训练环境可以不同。这里不需要OpenAI API Key。
-
-打开“数据库建设”后按以下顺序使用：
-
-1. **先看体系覆盖**：区分记录数、不同组成数、来源数和PL/PLE配对数。补库目标可以调整，表中差额是规划，不是统计充分性的保证。
-2. **再看样品自身误差**：搜索样品编号或DOI，核对实际使用的光谱标签。
-3. **展开训练影响**：查看暂不训练该记录后，其他样品误差的变化。负数表示其他样品误差下降，正数表示原记录对该任务有帮助；发射、激发和损失一起判断。
-4. **人工审核或建议修正**：填写原文页码、图表号、原值和新值。保存的是有依据的候选修改，不覆盖权威Excel。
-5. **一次只改一个参数**：先恢复原参数跑基准，再调整相似性尺度、观测噪声、损失交互或陶瓷修正幅度。查看三个任务的MAE、RMSE和R²，不只看发射误差。
-6. **候选修改单独重训**：有原文依据后再点击候选重训。修正标签会改变数据版本，其误差变化应与单纯调参分开解释。
-
-运行结果和审核历史保存在本地`REAL_RUNTIME_ROOT`。训练进程持有运行锁；本地服务重启后可重新识别仍在运行的任务，并阻止重复启动。默认训练为固定开发划分上的探索，不自动选择最优参数，也不直接发布为正式模型。当前本地功能与公开网页分离；GitHub Pages不运行Python训练和编辑API。
-
-历史逐样品图 `04_m0_diagnostics.png`、`08_emission_landscape.png` 已移出公开素材目录，保存在本地运行目录的 `private_legacy_figures/` 中。其原始文件保留，公开发布测试检查源目录及构建产物不再包含这两张图；这不等于清除了既有 Git 历史或已经上线的旧文件。
-
-## 文献与候选数据工作流
+## 真实工作流
 
 ```text
 上传PDF／扫描00_未处理
@@ -100,16 +74,14 @@ AI输出只保存到`REAL_CANDIDATE_ROOT`。工作台没有覆盖权威数据库
 
 ```bash
 cd /Users/sunry/Documents/real-materials-research
-conda run -n real-materials-pubfig python -m research.code.reporting.public_aggregate_release \
+conda run -n real-materials-pubfig python -m research.code.reporting.public_real_release \
   --snapshot-root research/data_snapshot \
   --authority-workbook "/本机权威数据库.xlsx" \
   --output-root /Users/sunry/Documents/real-materials-showcase/public/workbench/public-data \
-  --version v1.3_20260725_aggregate_v1
+  --version v1.3_20260725
 ```
 
-生成物包括`latest.json`、版本manifest及各筛选范围的家族计数、10 nm发射区间计数和字段覆盖总数。公开包不含样品编号、逐条DOI、化学式、逐点坐标或样品CSV。历史`public_real_release`是旧实验代码，保留用于复核，不再用于公开发布。
-
-详细归档图集及统计CSV放在本地`REAL_RUNTIME_ROOT/database_figures`，通过已登录的本地接口读取；不要放回`public/`目录。已公开过的历史Git提交不因当前目录移除而消失。
+生成物包括`latest.json`、不可变版本manifest及每个正式筛选范围的预计算图表数据。manifest登记数据库版本、源哈希、绘图规范和隐私声明。只有审核后的正式快照允许运行此命令；候选包不进入公开统计。
 
 ## 默认本地目录
 
@@ -122,8 +94,6 @@ conda run -n real-materials-pubfig python -m research.code.reporting.public_aggr
 | `REAL_RESEARCH_ROOT` | `~/Documents/real-materials-research` | 脱敏统计和模型成果 |
 
 ## 验证
-
-配置上述三个模型环境变量后，可用后端 Python 运行 `PYTHONPATH=server python scripts/check_model_workbench.py --train`。它通过真实接口读取89条审核数据、保存一条隔离测试记录、启动15折原参数训练，并核对三任务指标和源文件哈希。测试账号与审核记录仅存在于独立验证目录；结果和代码快照保存在本地 `REAL_RUNTIME_ROOT/verification/`，不混入日常审核。去掉 `--train` 可只检查读取、登录与审核保存。
 
 ```bash
 PYTHONPATH=server conda run -n real-materials-m0 python -m pytest server/tests -q

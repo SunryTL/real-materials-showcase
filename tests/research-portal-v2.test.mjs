@@ -38,17 +38,14 @@ test('public REAL tells the research story and exposes the four durable surfaces
   await page.getByText('10.1111/jace.20497', { exact: true }).waitFor();
 });
 
-test('public intake shows aggregate coverage without exposing sample records', { skip }, async t => {
+test('public intake is honest about local operation and still exposes current records', { skip }, async t => {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   t.after(() => page.close());
   await page.goto(`${origin}/real-materials-showcase/#intake`);
   await page.getByRole('heading', { name: /论文与候选表进入同一审核链/ }).waitFor();
   assert.equal(await page.locator('input[type=file]').count(), 0);
   await page.getByText(/公开页面不接收PDF/).waitFor();
-  const table = page.getByRole('table', { name: '当前正式数据库汇总' });
-  await table.waitFor();
-  assert.deepEqual(await table.locator('thead th').allTextContents(), ['材料家族', '记录数']);
-  assert.equal(await page.getByRole('columnheader', { name: '样品ID' }).count(), 0);
+  await page.getByRole('table', { name: '当前正式数据库预览' }).waitFor();
 });
 
 test('institutional header links Vinča after Belgrade and fits desktop and mobile', { skip }, async t => {

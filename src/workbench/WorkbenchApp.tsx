@@ -1,7 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { ScientificExplorer } from "./ScientificExplorer";
-import { ModelReview } from "./ModelReview";
-import { ModelTraining } from "./ModelTraining";
 import {
   Activity,
   ArrowRight,
@@ -1183,8 +1181,6 @@ function DatabasePage({
   return (
     <>
       <ScientificExplorer owner={owner} />
-      <ModelReview />
-      <ModelTraining owner={owner} />
       <details className="science-archive">
       <summary>已发布 PNG 图集与统计下载（补充归档）</summary>
       <section className="wb-figure-release">

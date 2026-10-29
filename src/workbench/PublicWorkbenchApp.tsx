@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Copy, Menu, ShieldCheck, UploadCloud, X } from 'lucide-react';
 import InstitutionalHome, { UniversityMarks, ResearchFooter } from './InstitutionalHome';
 import './institutional.css';
-import { PublicDatabaseSummary } from './PublicDatabaseSummary';
-import { fetchPublicSummary, type Summary } from './public-summary-data';
+import { ScientificExplorer } from './ScientificExplorer';
+import { fetchExplorer, type ExplorerData } from './explorer-data';
 
 type Page = 'home' | 'intake' | 'literature' | 'database';
 type Priority = {
@@ -16,13 +16,13 @@ const privateWorkbench = import.meta.env.VITE_REAL_PRIVATE_URL || 'http://127.0.
 
 
 function usePortalData() {
-  const [data, setData] = useState<Summary | null>(null);
+  const [data, setData] = useState<ExplorerData | null>(null);
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [error, setError] = useState('');
   useEffect(() => {
     const controller = new AbortController();
     Promise.all([
-      fetchPublicSummary(controller.signal),
+      fetchExplorer({ version: 'latest', family: '', material_form: '', status: 'formal' }, controller.signal, true),
       fetch(`${import.meta.env.BASE_URL}workbench/public-data/literature-priorities.json`, { signal: controller.signal }).then(response => response.ok ? response.json() : { items: [] }),
     ]).then(([explorer, queue]) => {
       setData(explorer);
@@ -35,7 +35,7 @@ function usePortalData() {
   return { data, priorities, error };
 }
 
-function IntakePage({ data, copied, copyTask }: { data: Summary | null; copied: boolean; copyTask: () => void }) {
+function IntakePage({ data, copied, copyTask }: { data: ExplorerData | null; copied: boolean; copyTask: () => void }) {
   return <div className="portal-page">
     <section className="portal-page-lead intake-lead">
       <div><span>LOCAL-FIRST RESEARCH INTAKE</span><h2>论文与候选表进入同一审核链</h2><p>公开页面不接收PDF，也不调用网页API。原文、权威Excel和密钥留在本机；这里展示当前正式数据，并把整理任务交接给受控的私有工作台与Codex。</p></div>
@@ -45,17 +45,18 @@ function IntakePage({ data, copied, copyTask }: { data: Summary | null; copied: 
       {['PDF登记与哈希','DOI与目标字段','Codex七表候选','人工证据审核','新正式快照'].map((item, index) => <div key={item}><strong>{index + 1}</strong><span>{item}</span></div>)}
     </section>
     <section className="portal-table-section">
-      <header><div><h3>当前正式数据库汇总</h3><p>公开页展示家族数量；样品来源、光谱数值与编辑在本地工作台查看。</p></div><span>{data?.summary.samples ?? '—'} records · {data?.summary.doi ?? '—'} DOI</span></header>
-      <div className="portal-table-scroll"><table aria-label="当前正式数据库汇总"><thead><tr><th>材料家族</th><th>记录数</th></tr></thead><tbody>{data?.aggregates.family_counts.map(row => <tr key={row.family}><td>{row.family}</td><td>{row.count}</td></tr>)}</tbody></table></div>
+      <header><div><h3>当前正式数据库预览</h3><p>只展示审核后的脱敏样品字段；完整证据仍由本地主库管理。</p></div><span>{data?.summary.samples ?? '—'} records · {data?.summary.doi ?? '—'} DOI</span></header>
+      <div className="portal-table-scroll"><table aria-label="当前正式数据库预览"><thead><tr><th>样品ID</th><th>材料家族</th><th>组成</th><th>PL / nm</th><th>字段覆盖</th></tr></thead><tbody>{data?.records.slice(0, 12).map(row => <tr key={row.sample_id}><td>{row.sample_id}</td><td>{row.family}</td><td>{row.formula}</td><td>{row.emission_nm ?? '缺失'}</td><td>{row.available_fields}/{row.total_fields}</td></tr>)}</tbody></table></div>
     </section>
   </div>;
 }
 
-function LiteraturePage({ data, priorities }: { data: Summary | null; priorities: Priority[] }) {
+function LiteraturePage({ data, priorities }: { data: ExplorerData | null; priorities: Priority[] }) {
+  const papers = data?.charts.evidence.papers || [];
   return <div className="portal-page">
-    <section className="portal-page-lead literature-lead"><div><span>EVIDENCE LEDGER</span><h2>已整理文献与下一批证据</h2><p>样品数不等于独立证据。这里展示正式数据库的文献总量和下一批候选，逐样品来源与审核在本地查看。</p></div><div className="literature-totals"><strong>{data?.summary.doi ?? '—'}</strong><span>正式数据库DOI</span><strong>{priorities.length}</strong><span>下一批候选</span></div></section>
+    <section className="portal-page-lead literature-lead"><div><span>EVIDENCE LEDGER</span><h2>已整理文献与下一批证据</h2><p>样品数不等于独立证据。这里同时显示正式数据库中的论文贡献和根据材料家族缺口生成的下一批候选。</p></div><div className="literature-totals"><strong>{papers.length}</strong><span>正式数据库DOI</span><strong>{priorities.length}</strong><span>下一批候选</span></div></section>
     <div className="literature-columns">
-      <section className="literature-ledger"><header><h3>正式文献证据</h3><span>汇总公开 · 逐条审核本地使用</span></header><p>当前版本覆盖 {data?.summary.doi ?? '—'} 个 DOI。文献—样品关联、页码和逐条标签请在本地工作台查看。</p><a className="wb-button secondary" href={privateWorkbench}>打开本地文献审核</a></section>
+      <section className="literature-ledger"><header><h3>已进入正式数据库</h3><span>按样品贡献排序</span></header>{papers.slice(0, 14).map((paper, index) => <article key={paper.doi}><i>{String(index + 1).padStart(2, '0')}</i><div><a href={`https://doi.org/${paper.doi}`} target="_blank" rel="noreferrer">{paper.doi || 'DOI待确认'}</a><small>已审核 · 正式快照</small></div><strong>{paper.samples}<small>samples</small></strong></article>)}</section>
       <section className="literature-ledger priority"><header><h3>下一批优先处理</h3><span>候选 · 需原文核验</span></header>{priorities.map(item => <article key={item.doi}><i>P{item.priority}</i><div><a href={`https://doi.org/${item.doi}`} target="_blank" rel="noreferrer">{item.doi}</a><b>{item.title}</b><small>{item.target_routes} · {item.next_action}</small></div><strong>{item.status}</strong></article>)}</section>
     </div>
     <p className="portal-boundary"><ShieldCheck size={17}/>候选DOI不代表已经取得原文，也不代表样品已经进入数据库；只有逐字段证据审核通过后才移动正式版本。</p>
@@ -103,13 +104,13 @@ export default function PublicWorkbenchApp() {
       <nav id="real-navigation" className={mobile ? 'is-open' : ''} aria-label="主导航"><a className="real-nav-brand" href="#home">REAL</a>{nav.map(([id,label])=><button key={id} aria-current={route === id ? 'page' : undefined} onClick={() => go(id)}>{label}</button>)}</nav>
     </div></header>
     <main id="main-content" className="real-main" tabIndex={-1}>
-      {page !== 'home' && <header className="real-tool-heading"><div><h1>{({database:'数据库状态',literature:'文献整理',intake:'数据录入'})[page]}</h1><p>REAL科研平台 · 可追溯的研究证据</p></div><div><span>数据库版本</span><b>{data?.version || '载入中'}</b><span>公开汇总 · 详细审核在本地</span></div></header>}
+      {page !== 'home' && <header className="real-tool-heading"><div><h1>{({database:'数据库状态',literature:'文献整理',intake:'数据录入'})[page]}</h1><p>REAL科研平台 · 可追溯的研究证据</p></div><div><span>数据库版本</span><b>{data?.version || '载入中'}</b><span>绘图规范：master-v2-individual</span></div></header>}
       <div className={page === 'home' ? 'real-home-content' : 'wb-content real-tool-content'}>
         {error && <p className="portal-data-error">{error}。数据库主页面仍可单独重试。</p>}
         {page === 'home' && <InstitutionalHome data={data}/>}
         {page === 'intake' && <IntakePage data={data} copied={copied} copyTask={copyTask}/>}
         {page === 'literature' && <LiteraturePage data={data} priorities={priorities}/>}
-        {page === 'database' && <PublicDatabaseSummary/>}
+        {page === 'database' && <ScientificExplorer publicMode/>}
       </div>
     </main>
     <ResearchFooter/>

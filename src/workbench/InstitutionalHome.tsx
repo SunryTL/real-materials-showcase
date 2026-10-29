@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react';
-import type { Summary } from './public-summary-data';
+import type { ExplorerData } from './explorer-data';
 
 const asset = (name: string) => `${import.meta.env.BASE_URL}brand/${name}`;
 export function UniversityMarks() {
@@ -18,7 +18,7 @@ export function ResearchFooter() {
   </div><div className="real-container real-footer-bottom">REAL · 中塞合作研究平台<span>可追溯数据 · 物理可解释建模 · 实验验证</span></div></footer>;
 }
 
-export default function InstitutionalHome({ data }: { data: Summary | null }) {
+export default function InstitutionalHome({ data }: { data: ExplorerData | null }) {
   return <div className="real-home">
     <section className="real-hero"><div className="real-container real-hero-layout">
       <div className="real-hero-copy"><h1>REAL Predictions.<br/>Real Light.</h1><h2>真实预测，真切发光</h2><p>面向稀土荧光材料的物理可解释人工智能与定向创制。</p><div className="real-actions"><a className="real-button" href="#database">探索数据库 <ArrowRight size={20}/></a><a className="real-button secondary" href="#cooperation">了解合作研究</a></div></div>
@@ -40,7 +40,7 @@ export default function InstitutionalHome({ data }: { data: Summary | null }) {
       <div className="real-research-chain" aria-label="共同研究方向">{['材料探索','机制解析与智能设计','实验反馈','陶瓷制备与服役评价'].map((s,i)=><div key={s}><span>{s}</span>{i<3&&<ArrowRight aria-hidden="true" size={22}/>}</div>)}</div>
     </div></section>
     <section className="real-foundation real-container"><div className="real-section-heading"><h2>从研究证据出发</h2><p>现有Ce³⁺石榴石荧光／透明陶瓷数据库，为材料组成、局域结构、光谱与工艺的关联研究提供可追溯基础。</p></div>
-      <div className="real-foundation-grid"><div className="real-evidence-panel"><img className="real-evidence-preview" src={asset('evidence-galaxy-preview.png')} alt="REAL本地数据库证据星系预览；节点表示材料、文献和样品归属" loading="lazy"/><h3>组成、结构、光谱与工艺<br/>在同一证据体系中相遇</h3><p>公开页查看家族覆盖与发射分布汇总；本地工作台保留证据星系、PCA化学空间和逐样品审核。</p><a href="#database">进入交互数据库 <ArrowRight size={20}/></a><dl><div><dt>正式记录</dt><dd>{data?.summary.samples ?? '—'}</dd></div><div><dt>可追溯 DOI</dt><dd>{data?.summary.doi ?? '—'}</dd></div></dl><small>当前公开快照：{data?.version || '正在读取'}。统计随审核后的版本更新。</small></div>
+      <div className="real-foundation-grid"><div className="real-evidence-panel"><img className="real-evidence-preview" src={asset('evidence-galaxy-preview.png')} alt="REAL公开数据库证据星系界面预览；节点表示材料、文献和样品归属" loading="lazy"/><h3>组成、结构、光谱与工艺<br/>在同一证据体系中相遇</h3><p>探索证据星系中的材料家族与文献归属，或切换至PCA化学空间，查看描述符空间中的样品分布。</p><a href="#database">进入交互数据库 <ArrowRight size={20}/></a><dl><div><dt>正式记录</dt><dd>{data?.summary.samples ?? '—'}</dd></div><div><dt>可追溯 DOI</dt><dd>{data?.summary.doi ?? '—'}</dd></div></dl><small>当前公开快照：{data?.version || '正在读取'}。统计随审核后的版本更新。</small></div>
       <div className="real-entry-links"><a href="#database"><h3>数据库</h3><p>材料家族、证据星系与PCA化学空间</p><ArrowRight/></a><a href="#literature"><h3>文献整理</h3><p>正式文献证据与待核验研究线索</p><ArrowRight/></a><a href="#intake"><h3>数据录入</h3><p>本机整理、人工审核与版本化发布</p><ArrowRight/></a><p className="real-model-status">模型正在进行严格分组验证，暂不提供数值预测。</p></div></div>
     </section>
   </div>;
